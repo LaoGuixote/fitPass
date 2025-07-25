@@ -316,7 +316,7 @@ public class MemberController : Controller
                 TimeSlot = p.Time.TimeSlot,
                 TimeId = p.TimeId
             })
-            .OrderBy(p => p.TimeId)
+            .OrderBy(p => p.Date)
             .ToListAsync();
 
         var courseOverview = new CourseOverview

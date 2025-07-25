@@ -1,0 +1,144 @@
+﻿@model List<fitPass.ViewModels.CoachReserveOverviewViewModel>
+@{
+    ViewData["Title"] = "我的開課";
+
+    string TimeSlotToString(int slot) => $"{slot + 5}:00 - {slot + 6}:00";
+    string FormatDate(DateOnly date) => date.ToString("yyyy-MM-dd");
+
+    var filter = Context.Request.Query["filter"].ToString();
+    var privateDate = Context.Request.Query["privateDate"].ToString();
+    var keyword = Context.Request.Query["keyword"].ToString();
+
+
+}
+
+<style>
+
+    .btn-cancel{
+    background-color: #6c757d;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+    }
+</style>
+
+<div class="d-flex justify-content-between mb-3"> 
+    <div>
+        <input type="date" id="privateDate" class="form-control " style="width: 8.125rem;" value="@privateDate">
+    </div>
+
+    <div>
+        <select id="filter" class="form-select ">
+            @if (filter == "active")
+            {
+                            <option value="active" selected>未到期</option>
+            }
+            else
+            {
+                            <option value="active">未到期</option>
+            }
+            @if (filter == "expired")
+            {
+                            <option value="expired" selected>已到期</option>
+            }
+            else
+            {
+                            <option value="expired">已到期</option>
+            }
+            @if (filter == "all")
+            {
+                                <option value="all" selected>全部</option>
+
+            }
+            else
+            {
+                                <option value="all">全部</option>
+            }
+            </select>
+    </div>
+</div>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+    <input type="text" id="keyword" class="form-control me-2" style="flex: 1;" value="@keyword" placeholder="搜尋會員名稱">
+
+    <button id="memberSearchCancel" class="btn-cancel">清除</button>
+</div>
+
+<table class="table table-secondary table-striped">
+    <thead>
+        <tr>
+            <th>預約會員</th>
+            <th>日期</th>
+            <th>時段</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var ps in Model)
+        {
+            <tr>
+                <td>@ps.MemberName</td>
+                <td>@FormatDate(ps.Date)</td>
+                <td>@TimeSlotToString(ps.TimeSlot)</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="qrcode-fixed-bar d-grid">
+    <button class="btn btn-green py-3" data-bs-toggle="modal" data-bs-target="#qrcodeModal" id="courseCalendar">
+        教師行事曆
+    </button>
+</div>
+
+
+<script>
+    function updateUrlAndSearch() {
+    const filter = document.getElementById("filter").value;
+    const privateDate = document.getElementById("privateDate").value;
+    const keyword = document.getElementById("keyword").value;
+
+    const url = new URL(window.location.href); 
+
+    if (filter) {
+        url.searchParams.set("filter", filter);
+    } else {
+        url.searchParams.delete("filter");
+    }
+
+    if (privateDate) {
+        url.searchParams.set("privateDate", privateDate);
+    } else {
+        url.searchParams.delete("privateDate");
+    }
+
+    if (keyword) {
+        url.searchParams.set("keyword", keyword);
+    } else {
+        url.searchParams.delete("keyword");
+    }
+
+    window.location.href = url.toString();
+}
+
+
+    document.getElementById("filter").addEventListener("change", updateUrlAndSearch);
+    document.getElementById("privateDate").addEventListener("change", updateUrlAndSearch);
+     document.getElementById("keyword").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            updateUrlAndSearch();
+        }
+    });
+    document.getElementById("memberSearchCancel").addEventListener("click", function () {
+    document.getElementById("keyword").value = "";
+    updateUrlAndSearch(); 
+    });
+
+    $("#courseCalendar").on("click", function(){
+         window.location.href = "/Coach/MobileSchedule";
+    });
+</script>
+

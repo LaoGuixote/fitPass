@@ -1,6 +1,7 @@
 ﻿using fitPass.Models;
 using fitPass.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.EntityFrameworkCore;
 
 namespace fitPass.Controllers
@@ -219,6 +220,82 @@ namespace fitPass.Controllers
                 .ToList();
 
             return Json(slots);
+        }
+
+        public async Task<IActionResult> CoachReserveOverview(string filter, DateOnly? privateDate, string keyword)
+        {
+            var memberId = HttpContext.Session.GetInt32("MemberId");
+            if (memberId == null) 
+                return RedirectToAction("Login", "Account");
+
+            var coach = await _context.Coaches
+                .Include(c => c.Account)
+                .FirstOrDefaultAsync(c => c.AccountId == memberId);
+            if (coach == null) 
+                return NotFound("找不到教練資料");
+
+            if (string.IsNullOrEmpty(filter))
+            {
+                filter = "active";
+            }
+
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            var privateSessionsQuery = _context.PrivateSessions
+                .Include(ps => ps.Time)
+                .ThenInclude(ps => ps.Coach)
+                .ThenInclude(ps => ps.Account)
+                .Where(ps => ps.Time.CoachId == coach.CoachId && ps.Status == 1);
+
+            if (!string.IsNullOrEmpty(keyword))
+            {
+
+                privateSessionsQuery = privateSessionsQuery
+                    .Join(_context.Accounts, ps => ps.MemberId, acc => acc.MemberId, (ps, acc) => new {ps, acc})
+                    .Where(p => p.acc.Name.Contains(keyword))
+                    .Select(p => new PrivateSession 
+                     {
+                         MemberId = p.ps.MemberId,
+                         Status = p.ps.Status,
+                         Time = p.ps.Time,
+                         TimeId = p.ps.TimeId,
+                         SessionId = p.ps.SessionId
+                     });
+            }
+
+            if (privateDate.HasValue)
+            {
+                privateSessionsQuery = privateSessionsQuery
+                    .Where(p => p.Time.Date == privateDate.Value);
+            }
+            else if (filter == "expired")
+            {
+                privateSessionsQuery = privateSessionsQuery
+                    .Where(p => p.Time.Date <= today);
+            }
+            else if (filter == "active")
+            {
+                privateSessionsQuery = privateSessionsQuery
+                    .Where(p => p.Time.Date > today);
+            }
+
+            // 查詢所有一對一課程
+            var privateSessions = await privateSessionsQuery
+                .OrderBy(ps => ps.Time.Date)
+                .ThenBy(ps => ps.Time.TimeSlot)
+                .Join(_context.Accounts, 
+                        ps => ps.MemberId, 
+                        acc => acc.MemberId, 
+                        (ps, acc) => new CoachReserveOverviewViewModel
+                        {
+                            Date = ps.Time.Date,
+                            Status = ps.Status ?? 0,
+                            TimeSlot = ps.Time.TimeSlot,
+                            MemberName = acc.Name
+                        })
+                    .ToListAsync();
+
+            return View(privateSessions);
         }
 
         //===========================================================
