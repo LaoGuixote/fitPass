@@ -1,0 +1,301 @@
+﻿@model List<fitPass.Models.CourseEventViewModel>
+
+@{
+    ViewData["Title"] = "日程表";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var selectedDate = (DateOnly)ViewBag.Date;
+    var weekDates = (List<DateOnly>)ViewBag.WeekDates;
+    var currentMonth = selectedDate.ToString("M月");
+}
+
+<div class="schedule-container">
+    <!-- 2. 月份 + legend -->
+    <div class="calendar-header">
+        <div class="month-title">@currentMonth</div>
+        <div class="legend">
+            <span class="dot oneonone"></span> 一對一課程
+            <span class="dot group"></span> 團體課程
+        </div>
+    </div>
+
+    <!-- 3. 週日期列 -->
+<div class="week-row">
+    @foreach (var d in weekDates)
+    {
+        <div class="week-col">
+            <div class="weekday-label">
+                @d.ToString("ddd", System.Globalization.CultureInfo.GetCultureInfo("zh-TW"))  <!-- 週一、週二... -->
+            </div>
+<a href="@Url.Action("DailySchedule", new { date = d.ToString("yyyy-MM-dd") })"
+   class="day-button @(d == selectedDate ? "selected" : "")">
+    @d.Day
+</a>
+</div>
+}
+</div>
+
+
+    <!-- 4. 課表時間軸 -->
+    <div class="timeline">
+@for (int hour = 6; hour <= 24; hour++)
+{
+    <div class="hour-row">
+        <div class="time-label">@($"{hour}:00")</div>
+        <div class="course-list">
+@foreach (var course in Model.Where(c => c.TimeSlot == (hour - 6 + 1)))
+{
+    <div class="course-card @(course.CourseTitle.Contains("一對一") ? "orange" : "green")">
+        @course.CourseTitle
+        <span style="font-size: 0.95em;">@course.CoachName 教練</span>
+    </div>
+}
+        </div>
+    </div>
+}
+</div>
+</div>
+
+<style>
+    .schedule-container {
+    display: flex;
+    flex-direction: column;
+    background: #f9f9f9;
+    overflow: hidden;
+    height: 100vh;
+}
+
+
+    body {
+        background-color: #f9f9f9;
+    }
+
+    .calendar-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 16px;
+        font-weight: bold;
+        background-color: white;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .month-title {
+        font-size: 1.3rem;
+        color: #333;
+    }
+
+    .legend {
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .dot.group {
+        width: 10px;
+        height: 10px;
+        background: #26C56A;
+        border-radius: 50%;
+        display: inline-block;
+    }
+
+    .dot.oneonone {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    background: orange;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+
+.hour-row {
+    display: grid;
+    grid-template-columns: 70px 1fr;   /* 70px可依你時間欄寬度微調 */
+    align-items: center;
+    border-bottom: 1px solid #000;
+    min-height: 40px;
+    padding: 8px 0;
+}
+
+
+    .time-label {
+    text-align: right;
+    font-size: 2.1rem;
+    color: #666;
+    padding-right: 10px;
+    }
+
+    .course-list {
+    display: flex;
+    justify-content: flex-end;   /* 讓裡面的內容靠右對齊 */
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    }
+
+
+
+.course-card.orange {
+    background: orange;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 10px;
+    display: inline-block;
+    width: auto;
+    max-width: 320px;          /* 依需要設最大寬 */
+    font-size: 1.1rem;
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.course-card.green {
+    background: #26C56A;
+    color: white;
+    border-radius: 8px;
+    padding: 12px 10px;
+    display: inline-block;
+    width: auto;
+    max-width: 320px;          /* 依需要設最大寬 */
+    font-size: 1.1rem;
+    text-align: center;
+    box-sizing: border-box;
+}
+    .course-card:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+}
+
+
+.week-col {
+    flex: 1 1 0;             /* 關鍵！平均分配寬度 */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.weekday-label {
+    font-size:1rem;
+    color: #888;
+}
+
+.day-button {
+    min-width: 0;      /* 跟隨 flex，取消原有 min-width */
+    width: 100%;       /* 填滿 week-col */
+    text-align: center;
+    padding: 8px 0;
+    border-radius: 8px;
+    background-color: #eee;
+    color: #333;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.day-button:hover {
+    background-color: #ddd;
+}
+
+.day-button.selected {
+    background-color: #007bff;
+    color: white;
+}
+
+
+/* 月份與 legend 區域 sticky */
+.calendar-header {
+    position: sticky;
+    top: 0px;   /* header高度請依你header實際高度微調，例: 120px */
+    z-index: 9;
+    background: #fff;
+    padding: 0px 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* 週日期 sticky */
+.week-row {
+    position: sticky;
+    top: 38px;   /* header+calendar-header高度相加，例: 120+48=168px */
+    z-index: 8;
+    background: #fff;
+    display: flex;
+    overflow: hidden;
+    padding: 8px 0px 45px 0px;
+    border-bottom: 1px solid #eee;
+}
+
+/* 時間軸主區塊，自動佔滿剩餘空間，可滾動 */
+.timeline {
+    flex: 1 1 auto;
+    overflow-y: auto;   /* 只讓這區塊捲動 */
+    background: #fff;
+    padding: 20 16px;
+}
+
+/* 日期按鈕 */
+.day-button {
+    flex: 0 0 auto;
+    min-width: 44px;
+    text-align: center;
+    padding: 6px 0;
+    border-radius: 8px;
+    background-color: #eee;
+    color: #333;
+    text-decoration: none;
+    font-weight: 600;
+    margin: 0 2px;
+}
+.day-button.selected {
+    background-color: #007bff;
+    color: white;
+}
+.day-button:hover {
+    background-color: #ddd;
+}
+
+body, .schedule-container, .calendar-header, .timeline, .week-row, .hour-row, .course-card, .legend, .weekday-label, .month-title {
+    font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+}
+
+/* 月份標題 */
+.month-title {
+    font-size: 1.55rem !important;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+}
+
+/* 星期幾 */
+.weekday-label {
+    font-size: 1.16rem !important;
+    font-weight: 500;
+    color: #666 !important;
+    margin-bottom: 2px;
+}
+
+/* 日期按鈕數字 */
+.day-button {
+    font-size: 1.15rem !important;
+    font-weight: 600;
+}
+
+
+
+/* 課程卡片標題 */
+.course-card {
+
+    font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+    font-weight: bold;
+}
+
+
+/* legend 字體調整 */
+.legend {
+    font-size: 1.08rem !important;
+}
+
+
+
+
+</style>

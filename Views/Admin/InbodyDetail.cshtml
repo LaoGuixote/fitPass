@@ -1,0 +1,77 @@
+﻿@model List<fitPass.Models.Inbody>
+@{
+    ViewData["Title"] = "Inbody 歷史紀錄";
+}
+
+
+
+<div class="dashboard-box">
+<h2>Inbody 歷史紀錄 - @ViewBag.MemberName</h2>
+
+<canvas id="chart" style="height:300px;"></canvas>
+
+<table class="table table-striped mt-4">
+    <thead>
+        <tr>
+            <th>紀錄日期</th>
+            <th>身高</th>
+            <th>體重</th>
+            <th>體脂</th>
+            <th>BMR</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var i in Model)
+        {
+            <tr>
+                <td>@i.RecordDate?.ToString("yyyy-MM-dd")</td>
+                <td>@i.Height</td>
+                <td>@i.Weight</td>
+                <td>@i.BodyFat</td>
+                <td>@i.Bmr</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const data = @Html.Raw(Json.Serialize(Model.OrderBy(i => i.RecordDate).Select(i => new {
+        date = i.RecordDate?.ToString("yyyy-MM-dd"),
+        weight = i.Weight ?? 0,
+        bodyFat = i.BodyFat ?? 0
+    })));
+
+    const ctx = document.getElementById('chart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: data.map(i => i.date),
+            datasets: [
+                {
+                    label: '體重',
+                    data: data.map(i => i.weight),
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.2
+                },
+                {
+                    label: '體脂',
+                    data: data.map(i => i.bodyFat),
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.2
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: { beginAtZero: true }
+            }
+        }
+    });
+</script>
+}
+</div>

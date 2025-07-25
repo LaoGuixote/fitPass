@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "登入";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FitPass - 登入</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body style="background-color: #f2f2f2;">
+    <div class="container text-center" style="max-width: 380px; margin: auto; padding-top: 100px;">
+
+        <div class="text-center mb-5">
+            <img src="/img/FP_GR.svg" alt="FitPass Logo" style="height: 48px;">
+        </div>
+
+        <h5 class="mb-3">登入你的帳號</h5>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger">@ViewBag.Error</div>
+        }
+
+        <form method="post">
+            <div class="form-group mb-3 text-start">
+                <input type="email" name="email" class="form-control form-control-lg" placeholder="信箱" required />
+            </div>
+            <div class="form-group mb-3 text-start">
+                <input type="password" name="password" class="form-control form-control-lg" placeholder="密碼" required />
+            </div>
+            <button type="submit" class="btn btn-green w-100 btn-lg">登入</button>
+        </form>
+        <div class="my-3">
+            <div class="text-center text-muted mb-2">或使用</div>
+            <a href="/Account/ExternalLogin?provider=Google" class="btn btn-black w-100 btn-lg ">
+                <img src="~/img/google.svg" style="width:20px; margin-right:10px;" />
+                使用 Google 帳號登入
+            </a>
+        </div>
+
+
+        <p class="mt-4 text-muted">
+            還沒有帳號？
+            <a href="/Account/Register" class="text-success fw-bold">點我創建帳號</a>
+        </p>
+
+        <p class="mt-4 text-muted">
+            <a href="/Account/ForgetPassword" class="text-success fw-bold">忘記密碼？</a>
+        </p>
+    </div>
+
+    @if (TempData["Notify"] != null)
+    {
+        <div class="modal fade" id="resetSuccessModal" tabindex="-1" role="dialog"> 
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title fw-bold">修改成功</h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>@TempData["Notify"]</p>
+                    </div>
+                        <div class="modal-footer d-flex justify-content-center">
+                        <button type="button" class="btn-green " data-bs-dismiss="modal">確認</button>
+                    </div>
+                </div>
+            </div>
+        </div>        
+    }
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+    const modalElement = document.getElementById("resetSuccessModal");
+    try{
+        if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement, {
+                        backdrop: 'static',
+                        keyboard: false
+                    });
+        modal.show();
+    }
+    }
+    catch(error){
+        alert("Modal 顯示失敗: " + error.message);
+    }
+
+
+});
+</script>
+
+</body>
+<style>
+    .btn-green {
+        background-color: #00D856;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+    }
+
+        .btn-green:hover {
+            background-color: #00b84d;
+            color: white;
+            opacity: 1;
+        }
+
+    .btn-black {
+        background-color: #141414;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+    }
+
+        .btn-black:hover {
+            background-color: #242424;
+            color: white;
+            opacity: 1;
+        }
+</style>
+
+</html>
+

@@ -1,0 +1,63 @@
+﻿@model fitPass.Models.Inbody
+
+@{
+	ViewData["Title"] = "新增 Inbody 資料";
+}
+
+<div class="row">
+	<div class="col-md-4">
+		<form asp-action="Create">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+			<div class="form-group">
+				<label asp-for="RecordDate" class="control-label">紀錄日期</label>
+				<input asp-for="RecordDate" class="form-control" type="date" required />
+				@if (@ViewBag.s != null)
+				{
+					<span style="color:red">@ViewBag.s</span>
+				}
+				<span asp-validation-for="RecordDate" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Height" class="control-label">身高</label>
+				<input asp-for="Height" class="form-control" required />
+				<span asp-validation-for="Height" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Weight" class="control-label">體重</label>
+				<input asp-for="Weight" class="form-control" required />
+				<span asp-validation-for="Weight" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="BodyFat" class="control-label">體脂肪</label>
+				<input asp-for="BodyFat" class="form-control" required />
+				<span asp-validation-for="BodyFat" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Bmr" class="control-label">BMR</label>
+				<input asp-for="Bmr" class="form-control" required />
+				<span asp-validation-for="Bmr" class="text-danger"></span>
+			</div>
+			@* <div class="form-group">
+				<label asp-for="Note" class="control-label">備註</label>
+				<input asp-for="Note" class="form-control" />
+				<span asp-validation-for="Note" class="text-danger"></span>
+			</div> *@
+
+			<div class="form-group" style="display:none">
+				<label asp-for="GoalNote" class="control-label"></label>
+				<input asp-for="GoalNote" class="form-control" />
+				<span asp-validation-for="GoalNote" class="text-danger"></span>
+			</div>
+			<br />
+			<div class="form-group">
+				<input type="submit" value="儲存" class="btn btn-success" />
+				<a asp-action="Index" class="btn btn-primary">取消</a>
+			</div>
+		</form>
+	</div>
+</div>
+
+@* @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+} *@

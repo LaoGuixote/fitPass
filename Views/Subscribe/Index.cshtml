@@ -1,0 +1,161 @@
+﻿@{
+	ViewData["Title"] = "方案訂閱";
+	if (ViewBag.time < DateOnly.FromDateTime(DateTime.Now))
+	{
+		ViewBag.s = "您目前沒有會籍。";
+		ViewBag.m = 0;
+	}
+	else
+	{
+		ViewBag.s = $"您目前的會籍有效期限至 <span style='color: red'>{ViewBag.time}</span> !";
+		ViewBag.m = 1;
+	}
+	if (TempData["result"] == null)
+	{
+		TempData["result"] = "null";
+	}
+}
+
+<head>
+	<link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+</head>
+
+<section id="plans" class="container">
+	<h2>
+		@Html.Raw(@ViewBag.s)
+		<br>
+		請選擇您想要的方案!
+	</h2>
+	<div class="plan-cards">
+
+		<div class="plan-card">
+			<h3>月費方案</h3>
+			<p class="price">$900<span>/月</span></p>
+			<button class="btn btn-success btn-lg" id="1">選擇</button>
+
+		</div>
+
+		<div class="plan-card">
+			<h3>季費方案</h3>
+			<p class="price">$2500<span>/季</span></p>
+			<button class="btn btn-success btn-lg" id="2">選擇</button>
+
+		</div>
+
+		<div class="plan-card">
+			<h3>年費方案</h3>
+			<p class="price">$9000<span>/年</span></p>
+			<button class="btn btn-success btn-lg" id="3">選擇</button>
+
+		</div>
+
+	</div>
+
+	<div class="mt-4 text-center">
+		<a asp-action="Record" class="btn btn-success btn-lg">訂閱記錄</a>
+	</div>
+
+</section>
+
+<div id="purchase-modal" class="modal">
+	<div class="modal-content">
+		<span class="close-button">&times;</span>
+		<h2>您即將訂閱 <strong id="modal-plan-name"></strong></h2>
+		<p>會籍時間變更至: <strong id="newdate"></strong></p>
+		<p>費用: <strong id="modal-plan-price"></strong></p>
+
+		<form id="purchase-form" method="post">
+			<button type="submit" id="confirm" name="type" class="submit-button">確認訂閱</button>
+		</form>
+	</div>
+</div>
+
+<div id="result-modal" class="modal">
+	<div class="modal-content">
+		<h2 id="text"></h2>
+		<button id="topUp" class="submit-button">關閉</button>
+	</div>
+</div>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const modal = document.getElementById('purchase-modal');
+		const result = document.getElementById('result-modal');
+		const closeButton = document.querySelector('.close-button');
+		const modalPlanName = document.getElementById('modal-plan-name');
+		const modalPlanPrice = document.getElementById('modal-plan-price');
+
+		if (@TempData["result"] != null){
+			result.style.display = 'flex';
+			if(@TempData["result"]) {
+				document.getElementById("text").innerHTML = "訂閱成功!";
+				document.getElementById("topUp").addEventListener('click', () =>
+				{
+					result.style.display = 'none';
+				});
+			} else {
+				document.getElementById("text").innerHTML = "點數不足，請儲值!";
+				document.getElementById("topUp").addEventListener('click', () =>
+				{
+					window.location = "/Point/index";
+				});
+			}
+		}
+
+		document.querySelectorAll('.btn').forEach(button => {
+			button.addEventListener('click', (event) => {
+				modalPlanName.textContent = button.parentElement.querySelector('h3').textContent;
+				modalPlanPrice.textContent = button.parentElement.querySelector('.price').textContent;
+
+				let s;
+				if (@ViewBag.m == 1) {
+					switch (button.id) {
+						case "1" :
+							s = "@ViewBag.time.AddDays(30)";
+							break;
+						case "2" :
+							s = "@ViewBag.time.AddDays(120)";
+							break;
+						case "3" :
+							s = "@ViewBag.time.AddDays(365)";
+							break;
+					}
+				} else  {
+					switch (button.id) {
+						case "1" :
+							s = "@DateOnly.FromDateTime(DateTime.Now).AddDays(30)";
+							break;
+						case "2" :
+							s = "@DateOnly.FromDateTime(DateTime.Now).AddDays(120)";
+							break;
+						case "3" :
+							s = "@DateOnly.FromDateTime(DateTime.Now).AddDays(365)";
+							break;
+					}
+				}
+				document.getElementById("confirm").value = button.id;
+
+				document.getElementById('newdate').textContent = s;
+
+				modal.style.display = 'flex';
+			});
+		});
+
+		closeButton.addEventListener('click', () => {
+			modal.style.display = 'none';
+		});
+
+		window.addEventListener('click', (event) => {
+			if (event.target === modal) {
+				modal.style.display = 'none';
+			}
+		});
+
+		window.addEventListener('click', (event) => {
+			if (event.target === result) {
+				result.style.display = 'none';
+			}
+		});
+	});
+
+</script>

@@ -1,0 +1,106 @@
+﻿@model fitPass.Models.CourseSchedule
+@{
+    ViewData["Title"] = "編輯團體課程";
+}
+
+
+
+<div class="dashboard-box">
+<h2>編輯團體課程</h2>
+
+<form asp-action="EditClass" method="post" enctype="multipart/form-data">
+    <input type="hidden" asp-for="CourseId" />
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="CoachId" class="form-label">授課教練</label>
+        <select asp-for="CoachId" class="form-select" asp-items="ViewBag.CoachList"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ClassTimeDayOfWeek" class="form-label">每週上課日</label>
+        <select asp-for="ClassTimeDayOfWeek" class="form-select">
+            @for (int i = 1; i <= 7; i++)
+            {
+                <option value="@i" selected="@(Model.ClassTimeDayOfWeek == i)">
+                    星期 @(i switch { 1 => "一", 2 => "二", 3 => "三", 4 => "四", 5 => "五", 6 => "六", 7 => "日", _ => "" })
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ClassTimeDaily" class="form-label">每日上課時段</label>
+        <select asp-for="ClassTimeDaily" class="form-select">
+            @for (int i = 1; i <= 18; i++)
+            {
+                var startHour = 6 + (i - 1);
+                var endHour = startHour + 1;
+                <option value="@i" selected="@(Model.ClassTimeDaily == i)">
+                    @($"{startHour:00}:00–{endHour:00}:00")
+                </option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Location" class="form-label">上課地點</label>
+        <select asp-for="Location" class="form-select" asp-items="ViewBag.LocationList"></select>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ClassStartDate" class="form-label">上課起始日</label>
+        <input asp-for="ClassStartDate" class="form-control" type="date" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="ClassEndDate" class="form-label">上課結束日</label>
+        <input asp-for="ClassEndDate" class="form-control" type="date" />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Price" class="form-label">課程價格</label>
+        <input asp-for="Price" class="form-control" type="number" max="9999" />
+        <span asp-validation-for="Price" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="MaxStudent" class="form-label">最大人數</label>
+        <input asp-for="MaxStudent" class="form-control" required />
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="IsCanceled" class="form-label">課程狀態</label>
+        <select asp-for="IsCanceled" class="form-select">
+            <option value="false" selected="@(Model.IsCanceled == false)">開放報名中</option>
+            <option value="true" selected="@(Model.IsCanceled == true)">課程下架</option>
+        </select>
+    </div>
+
+
+    <div class="mb-3">
+        <label class="form-label">目前課程圖片</label><br />
+        @if (Model.CourseImage != null)
+        {
+            <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.CourseImage)" style="max-height:150px;" />
+        }
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">更換圖片（可選）</label>
+        <input type="file" name="newImage" class="form-control" accept="image/*" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">儲存變更</button>
+    <a asp-action="ClassList" class="btn btn-secondary">取消</a>
+</form>
+</div>

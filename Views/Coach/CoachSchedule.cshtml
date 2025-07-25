@@ -1,0 +1,149 @@
+﻿@{
+    ViewData["Title"] = "排班月曆";
+    var coachId = ViewBag.CoachId;
+}
+
+<style>
+    .fc-day-past {
+        background-color: #999999 !important;
+        color: #ffffff !important;
+        pointer-events: none;
+    }
+</style>
+<div class="d-flex justify-content-center my-5">
+
+    <div id='calendar' style="max-width: 1000px; width: 100%;"></div>
+</div>
+
+<div id="timeSlotModal" class="modal" tabindex="-1" style="display:none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="submitTimesForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">選擇空閒時段：<span id="selectedDate"></span></h5>
+                </div>
+                <div class="modal-body">
+                    @for (int i = 1; i <= 18; i++)
+                    {
+                        var timeOption = $"timeSlot{i}";
+                        <div>
+                            <input type="checkbox" name="timeSlots" value="@i" id="@timeOption" />
+                            <label for="@timeOption">@($"{i + 5:00}:00 ~ {i + 6:00}:00")</label>
+                    </div>
+                    }
+                <div>
+                    <button type="button" id="selectAllBtn" class="btn-green">全選</button>
+                </div>
+        </div>
+        <div class="modal-footer">
+            <input type="hidden" name="date" id="dateInput" />
+         @* <input type="hidden" name="coachId" value="@coachId" /> *@
+            <button type="submit" class="btn-green">送出</button>
+            <button type="button" class="btn-orange" id="cancelBtn">取消</button>
+        </div>
+        </form>
+    </div>
+</div>
+</div>
+
+<div class="modal fade" id="notifyModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+
+                <p id="notifyContent" style="text-align: center" class="text-title-md mt-4"></p>
+                <div class="text-center mt4">
+                    <button type="button" class="btn-green text-title-md" data-bs-dismiss="modal" id="notifyCancel"
+                        style="letter-spacing: 0.2rem">確認</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        const calendarEl = document.getElementById('calendar');
+
+        const calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'zh-tw',
+            dayCellContent: function (arg) {
+                return arg.date.getDate();
+            },
+            selectAllow: function (selectInfo) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return selectInfo.start >= today;
+            },
+            dateClick: function (info) {
+                const todayStr = new Date().toISOString().split('T')[0];
+                if (info.dateStr < todayStr) return;
+
+                const selectedDate = info.dateStr;
+                $('#selectedDate').text(selectedDate);
+                $('#dateInput').val(selectedDate);
+
+                $("input[name='timeSlots']").prop('checked', false);
+
+                $.get('/Coach/GetTimeSlots', {
+                    date: selectedDate
+                }, function (data) {
+                    data.forEach(function (slot) {
+                        $(`input[name='timeSlots'][value='${slot}']`).prop("checked", true);
+                    });
+                setTimeout(()=>{
+                    $('#timeSlotModal').show();
+                }, 200);
+                });
+            },
+            events: {
+                url: '/Coach/GetScheduleCount',
+                method: 'GET',
+                failure: function () {
+                    alert('載入排班資訊失敗！');
+                }
+            }
+        });
+
+        calendar.render();
+
+        //全選按鈕
+        $('#selectAllBtn').on('click', function () {
+            $("input[name='timeSlots']").prop('checked', true);
+        });
+
+        //送出按鈕
+        $('#submitTimesForm').on('submit', function (e) {
+            e.preventDefault();
+
+            //檢查有沒有選時段
+            const checked = $("input[name='timeSlots']:checked").length;
+            if (checked === 0) {
+                $("#notifyContent").text("請選擇時段！");
+                const notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'));
+                notifyModal.show();
+                return;
+            }
+
+            const formData = $(this).serialize();
+            $.post('/Coach/SubmitSchedule', formData, function (res) {
+                $('#timeSlotModal').hide();
+                $("#notifyContent").text("排班成功！");
+                const notifyModal = new bootstrap.Modal(document.getElementById('notifyModal'));
+                notifyModal.show();
+
+                //只綁一次 click 
+                $('#notifyCancel').off("click").on("click", function () {
+                    location.reload();
+                });
+            });
+        });
+
+        //取消按鈕
+        $("#cancelBtn").on("click", function () {
+            $('#timeSlotModal').hide();
+        })
+    });
+</script>

@@ -1,0 +1,70 @@
+﻿@{
+    ViewData["Title"] = "寄送通知信";
+    dynamic members = ViewBag.Members;
+    string keyword = ViewBag.Keyword as string ?? "";
+    int? isActive = ViewBag.IsActive as int?;
+}
+
+<div class="dashboard-box">
+<h2>寄送通知信</h2>
+
+<!-- 搜尋表單區塊 -->
+<form method="get" asp-action="SendEmail" class="mb-4">
+    <div class="row">
+        <div class="col-md-4">
+            <input type="text" name="keyword" class="form-control" placeholder="搜尋姓名或 Email" value="@keyword" />
+        </div>
+        <div class="col-md-3">
+            <select name="isActive" class="form-select">
+                <option value="">全部帳號狀態</option>
+                <option value="1" selected="@(isActive == 1)">已啟用</option>
+                <option value="0" selected="@(isActive == 0)">未啟用</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-primary">搜尋</button>
+                <a asp-action="SendEmail" class="btn btn-outline-secondary">重置</a>
+        </div>
+    </div>
+</form>
+
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger">@TempData["Error"]</div>
+}
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">@TempData["Success"]</div>
+}
+
+<!-- 寄信表單 -->
+<form asp-action="SendEmail" method="post">
+    <div class="form-group">
+        <label><strong>選擇收件會員：</strong></label>
+        <div class="border rounded p-2" style="max-height: 300px; overflow-y: scroll;">
+            @foreach (var m in members)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="selectedMemberIds" value="@m.MemberId" id="check_@m.MemberId" />
+                    <label class="form-check-label" for="check_@m.MemberId">
+                        @($"{m.Name} ({m.Email})")
+                        @if (!m.IsActive) { <span class="badge bg-secondary ms-1">未啟用</span> }
+                    </label>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="form-group mt-3">
+        <label for="subject"><strong>信件主旨：</strong></label>
+        <input type="text" class="form-control" name="subject" id="subject" required />
+    </div>
+
+    <div class="form-group mt-3">
+        <label for="body"><strong>信件內容（可使用 HTML）：</strong></label>
+        <textarea class="form-control" name="body" id="body" rows="8" required></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">寄出通知信</button>
+</form>
+</div>

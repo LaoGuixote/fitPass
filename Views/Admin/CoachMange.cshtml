@@ -1,0 +1,38 @@
+﻿@model List<fitPass.Models.Account>
+
+
+<div class="dashboard-box">
+    <h2> <i class="bi bi-people-fill"></i> 教練資料管理</h2>
+<table class="table">
+        <thead class="table-dark">
+        <tr>
+            <th>姓名</th>
+            <th>Email</th>
+            <th>狀態</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var account in Model)
+        {
+            <tr>
+                <td>@account.Name</td>
+                <td>@account.Email</td>
+                <td>
+                    @(account.Coach != null ? "已有資料" : "尚未建立")
+                </td>
+                <td>
+                    @if (account.Coach != null)
+                    {
+                        <a asp-action="EditCoach" asp-route-coachId="@account.Coach.CoachId" class="btn btn-primary">編輯</a>
+                    }
+                    else
+                    {
+                        <a asp-action="AddCoach" asp-route-accountId="@account.MemberId" class="btn btn-success">新增</a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+	</table>
+</div>

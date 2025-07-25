@@ -1,0 +1,172 @@
+﻿@model List<fitPass.Models.ViewModels.CheckInRecordStatusViewModel>
+
+@{
+    ViewData["Title"] = "出入場狀態總覽";
+    string? keyword = ViewData["Keyword"]?.ToString();
+    string? range = ViewData["Range"]?.ToString();
+    string? mode = ViewData["Mode"]?.ToString();
+}
+
+<div class="dashboard-box">
+    <h2><i class="bi bi-calendar-check"></i> 出入場狀態總覽</h2>
+
+    <!-- 查詢表單 -->
+    <form method="get" class="mb-4 d-flex flex-wrap align-items-end">
+        <div class="me-3 mb-2">
+            <label for="keyword" class="form-label">會員搜尋</label>
+            <input type="text" name="keyword" class="form-control" value="@keyword" placeholder="輸入會員姓名關鍵字" />
+        </div>
+
+        <div class="me-3 mb-2">
+            <label for="range" class="form-label">時間範圍</label>
+            <select name="range" class="form-select">
+                <option value="">-- 全部 --</option>
+                @if (range == "today")
+                {
+                    <option value="today" selected>本日</option>
+                }
+                else
+                {
+                    <option value="today">本日</option>
+                }
+                @if (range == "week")
+                {
+                    <option value="week" selected>本週</option>
+                }
+                else
+                {
+                    <option value="week">本週</option>
+                }
+                @if (range == "month")
+                {
+                    <option value="month" selected>本月</option>
+                }
+                else
+                {
+                    <option value="month">本月</option>
+                }
+            </select>
+        </div>
+
+        <div class="me-3 mb-2">
+            <label for="mode" class="form-label">紀錄篩選</label>
+            <select name="mode" class="form-select">
+                @if (string.IsNullOrEmpty(mode))
+                {
+                    <option value="" selected>一般紀錄</option>
+                    <option value="abnormal">未退場異常紀錄</option>
+                }
+                else if (mode == "abnormal")
+                {
+                    <option value="">一般紀錄</option>
+                    <option value="abnormal" selected>未退場異常紀錄</option>
+                }
+                else
+                {
+                    <option value="">一般紀錄</option>
+                    <option value="abnormal">未退場異常紀錄</option>
+                }
+            </select>
+        </div>
+
+        <div class="me-3 mb-2">
+            <button type="submit" class="btn btn-primary">查詢</button>
+        </div>
+        <div class="mb-2">
+            <a class="btn btn-outline-secondary" href="@Url.Action("CheckInStatusList", "Admin")">清除查詢</a>
+        </div>
+    </form>
+
+    <!-- 出入場紀錄表格 -->
+    <!-- 出入場紀錄表格 -->
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>會員名稱</th>
+                <th>入場時間</th>
+                <th>退場時間</th>
+                <th>目前狀態</th>
+                @if (mode == "abnormal")
+                {
+                    <th>操作</th>
+                }
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Any())
+            {
+                foreach (var record in Model)
+                {
+                    <tr>
+                        <td>@record.MemberName</td>
+                        <td>@(record.CheckInTime?.ToString("yyyy/MM/dd HH:mm") ?? "-")</td>
+                        <td>@(record.CheckOutTime?.ToString("yyyy/MM/dd HH:mm") ?? "-")</td>
+                        <td>
+                            @if (record.Status == 1)
+                            {
+                                <span class="text-success">入場中</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">已退場</span>
+                            }
+                        </td>
+                        @if (mode == "abnormal")
+                        {
+                            <td>
+                                @if (record.Status == 1)
+                                {
+                                    <button class="btn btn-sm btn-danger force-checkout-btn"
+                                            data-id="@record.RecordId">
+                                        強制退場
+                                    </button>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="@(mode == "abnormal" ? 5 : 4)" class="text-center text-muted">
+                        查無符合條件的紀錄
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('.force-checkout-btn').click(function () {
+                const id = $(this).data('id');
+                if (!confirm('確定要強制設定退場時間？')) return;
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@Url.Action("ForceCheckout", "Admin")',
+                    data: { recordId: id },
+                    success: function (res) {
+                        if (res.success) {
+                            alert('退場成功，頁面即將重新整理');
+                            location.reload();
+                        } else {
+                            alert('操作失敗：' + res.message);
+                        }
+                    },
+                    error: function () {
+                        alert('發生錯誤，請稍後再試');
+                    }
+                });
+            });
+        });
+    </script>
+}

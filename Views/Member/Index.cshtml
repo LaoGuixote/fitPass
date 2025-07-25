@@ -1,0 +1,259 @@
+﻿@using System.Linq
+@using fitPass.Models
+@model fitPass.ViewModels.UnifiedDashboardViewModel
+
+@{
+    ViewData["Title"] = "會員首頁";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+    <!-- 使用者資訊 -->
+    <div class="fitpass-card mb-4 shadow-sm rounded">
+        <div class="text-title-md">早安，@Model.Member.Name</div>
+        <div class="text-info-sm" id="peopleNowDisplay">目前場館人流：@Model.PeopleNow / 60</div>
+        <div class="text-info-sm" id="entryStatusDisplay">
+            目前狀態：
+            @if (Model.IsCheckedIn)
+            {
+                <span class="text-success">已入場</span>
+            }
+            else
+            {
+                <span class="text-danger">已退場</span>
+            }
+        </div>
+    </div>
+@if (ViewBag.IsProfileIncomplete == true)
+{
+    <div class="alert alert-warning d-flex justify-content-between align-items-center" role="alert">
+        <div>
+            👤 您的會員資料尚未完整，請 <a asp-controller="Member" asp-action="Edit" class="alert-link">立即完善會員資料</a>。
+        </div>
+        <a asp-controller="Member" asp-action="Edit" class="btn btn-sm btn-warning">前往編輯</a>
+    </div>
+}
+
+    <!-- 👨‍🏫 教練專區 -->
+    @if (Model.IsCoach)
+    {
+        <hr />
+        <div class="fitpass-card shadow-sm rounded mb-5">
+            <h5 class="text-title-md">🎓 教練專區</h5>
+
+            @if (Model.CoachPhoto != null)
+            {
+                <div class="mb-3 text-center">
+                    <img src="@Model.CoachPhoto" alt="教練照片" class="img-fluid rounded" style="max-width: 150px;" />
+                </div>
+            }
+
+            <div class="text-info-sm mb-2">
+                <strong>專長：</strong> @Model.Specialty <br />
+                <strong>簡介：</strong> @Model.Description
+            </div>
+
+            <ul class="text-info-sm mb-3">
+                <li>即將上課堂數：@Model.UpcomingClassCount</li>
+                <li>已排時段數量：@Model.ScheduledSlotsCount</li>
+            </ul>
+
+            <div class="d-grid gap-2">
+                <a href="/Coach/MobileSchedule" class="btn btn-outline-primary">課表行事曆</a>
+                <a href="/Coach/CoachSchedule?id=@Model.CoachId" class="btn btn-success">新增一對一空閒時段</a>
+            </div>
+        </div>
+    }
+
+
+    @functions {
+        private string GetTimeSlotText(int timeSlot)
+        {
+            var baseTime = new TimeSpan(8, 0, 0); // 第1節 08:00
+            var start = baseTime + TimeSpan.FromHours(timeSlot - 1);
+            var end = start + TimeSpan.FromHours(1);
+            return $"{start:hh\\:mm}-{end:hh\\:mm}";
+        }
+
+        private string GetWeekday(DateOnly date)
+        {
+            return date.DayOfWeek switch
+            {
+                DayOfWeek.Sunday => "日",
+                DayOfWeek.Monday => "一",
+                DayOfWeek.Tuesday => "二",
+                DayOfWeek.Wednesday => "三",
+                DayOfWeek.Thursday => "四",
+                DayOfWeek.Friday => "五",
+                DayOfWeek.Saturday => "六",
+                _ => ""
+            };
+        }
+    }
+
+
+
+
+    <!-- 🏫 課程資訊 -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="text-title-md mb-0">你的近期課程</h5>
+        <a href="/CourseSchedules/MobileSchedule" class="text-decoration-none text-info-sm">
+            更多 <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+
+@if (Model.UpcomingCourses != null && Model.UpcomingCourses.Any(e => e.ClassDate >= DateOnly.FromDateTime(DateTime.Today)))
+{
+    <ul class="list-group mb-4">
+        @foreach (var e in Model.UpcomingCourses
+            .Where(e => e.ClassDate >= DateOnly.FromDateTime(DateTime.Today))
+            .OrderBy(e => e.ClassDateTime))
+        {
+            var url = e.CourseType == "Group" ? $"/CourseSchedules/GroupCourseDetail/{e.CourseId}" : "#";
+            <li class="list-group-item text-info-sm">
+                <a href="@url" class="text-decoration-none text-dark">
+                    @($"{e.ClassDate:MM.dd} ({GetWeekday(e.ClassDate)}) {GetTimeSlotText(e.TimeSlot)} - {e.CourseTitle}")
+                </a>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <div class="text-info-sm mb-4">目前尚無預約課程</div>
+}
+
+
+
+    <!-- 📰 最新消息 -->
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="text-title-md mb-0">最新消息</h5>
+        <a href="/News/Index" class="text-decoration-none text-info-sm">
+            更多 <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+
+    <div class="d-flex gap-3 pb-3 mb-4 news-scroll-container">
+
+        @foreach (var n in Model.NewsList)
+        {
+            <a href="/News/Detail/@n.NewsId" class="text-decoration-none text-dark flex-shrink-0" style="width: 75%;">
+                <div class="card border-0 shadow-sm">
+                    @if (n.Banner != null)
+                    {
+                        var base64 = "data:image/png;base64," + Convert.ToBase64String(n.Banner);
+                        <div class="ratio ratio-16x9 rounded-top overflow-hidden">
+                            <img src="@base64" class="w-100 h-100 object-fit-cover" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="ratio ratio-16x9 bg-light rounded-top"></div>
+                    }
+
+                    <div class="card-body p-2">
+                        <div class="text-info-sm text-truncate">@n.Title</div>
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+
+@* </div> *@
+
+<!-- 🧷 固定底部入場按鈕 -->
+<div class="qrcode-fixed-bar d-grid">
+    @if (Model.HasValidSubscription)
+    {
+        <button class="btn btn-green py-3" data-bs-toggle="modal" data-bs-target="#qrcodeModal">
+            入場 QRCode
+        </button>
+    }
+    else
+    {
+        <button class="btn btn-secondary py-3" onclick="alert('請先訂閱會籍才能入場喔！')">
+            入場 QRCode
+        </button>
+    }
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="qrcodeModal" tabindex="-1" aria-labelledby="qrcodeLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-header border-0">
+                <h5 class="modal-title w-100 text-title-md">@Model.Member.Name 的入場碼</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center align-items-center flex-column">
+                    <div id="qrcode"></div>
+                    <p class="text-info-sm mt-3">剩餘時間 <span id="countdown">30</span> 秒</p>
+                    <button class="btn btn-outline-success mt-2" onclick="generateQRCode()">重新整理</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Script -->
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script>
+    const memberId = '@Context.Session.GetInt32("MemberId")';
+    var qrcode;
+    var countdown = 30;
+    var countdownInterval;
+
+    function generateQRCode() {
+        const timestamp = Date.now();
+        const qrText = btoa(`${memberId}|${timestamp}`);
+
+        if (qrcode) {
+            qrcode.clear();
+        } else {
+            qrcode = new QRCode(document.getElementById("qrcode"), {
+                width: 180,
+                height: 180
+            });
+        }
+        qrcode.makeCode(qrText);
+        resetCountdown();
+
+        fetch('/Member/CheckInOut', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+            }
+        }).then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById("peopleNowDisplay").innerText = `目前場館人流：${data.peopleNow} / 60`;
+                const statusEl = document.getElementById("entryStatusDisplay");
+                if (data.currentStatus === "已入場") {
+                    statusEl.innerHTML = '目前狀態：<span class="text-success">已入場</span>';
+                } else {
+                    statusEl.innerHTML = '目前狀態：<span class="text-danger">已退場</span>';
+                }
+            } else {
+                alert("打卡失敗");
+            }
+        });
+    }
+
+    function resetCountdown() {
+        countdown = 30;
+        document.getElementById("countdown").innerText = countdown;
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            countdown--;
+            document.getElementById("countdown").innerText = countdown;
+            if (countdown <= 0) clearInterval(countdownInterval);
+        }, 1000);
+    }
+
+    const modal = document.getElementById("qrcodeModal");
+    modal.addEventListener('shown.bs.modal', generateQRCode);
+</script>
+
+

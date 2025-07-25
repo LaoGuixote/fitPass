@@ -1,0 +1,214 @@
+﻿@{
+    ViewData["Title"] = "所有課程";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@model List<fitPass.Models.GroupCourseVM>
+
+@{
+    // 取得篩選參數
+    var hasQuery = Context.Request.QueryString.HasValue;
+    var currentCoachId = Context.Request.Query["coachId"].ToString();
+    var currentAvailableFilter = Context.Request.Query["availableFilter"].ToString();
+    var currentSignUpFilter = Context.Request.Query["signUpFilter"].ToString();
+}
+
+<div class="filter-bar">
+    <!-- 全部教練 -->
+    <div class="coach-filter">
+        <form method="get" style="display:inline;">
+            <select name="coachId" onchange="this.form.submit()" class="form-select">
+                <option value="">全部教練</option>
+                @foreach (var coach in (IEnumerable<dynamic>)ViewBag.CoachList)
+                {
+                    if (currentCoachId == coach.CoachId.ToString())
+                    {
+                        <option value="@coach.CoachId" selected>@coach.Name 教練</option>
+                    }
+                    else
+                    {
+                        <option value="@coach.CoachId">@coach.Name 教練</option>
+                    }
+                }
+            </select>
+            <input type="hidden" name="signUpFilter" value="@currentSignUpFilter" />
+            <input type="hidden" name="availableFilter" value="@currentAvailableFilter" />
+        </form>
+    </div>
+
+    <!-- 課程狀態 -->
+    <div class="available-filter">
+        <form id="availableForm" method="get" style="display:inline;">
+            <select name="availableFilter" onchange="this.form.submit()" class="form-select">
+                @if (currentAvailableFilter == "")
+                {
+                    <option value="" selected>全部課程</option>
+                }
+                else
+                {
+                    <option value="">全部課程</option>
+                }
+                @if (currentAvailableFilter == "available")
+                {
+                    <option value="available" selected>可報名課程</option>
+                }
+                else
+                {
+                    <option value="available">可報名課程</option>
+                }
+            </select>
+            <input type="hidden" name="coachId" value="@currentCoachId" />
+            <input type="hidden" name="signUpFilter" value="@currentSignUpFilter" />
+        </form>
+    </div>
+
+    <!-- 報名狀況 -->
+    <div class="signup-filter">
+        <form method="get" style="display:inline;">
+            <select name="signUpFilter" onchange="this.form.submit()" class="form-select">
+                <option value="">報名狀況</option>
+                @if (currentSignUpFilter == "registered")
+                {
+                    <option value="registered" selected>已報名</option>
+                }
+                else
+                {
+                    <option value="registered">已報名</option>
+                }
+                @if (currentSignUpFilter == "notRegistered")
+                {
+                    <option value="notRegistered" selected>未報名</option>
+                }
+                else
+                {
+                    <option value="notRegistered">未報名</option>
+                }
+            </select>
+            <input type="hidden" name="coachId" value="@currentCoachId" />
+            <input type="hidden" name="availableFilter" value="@currentAvailableFilter" />
+        </form>
+    </div>
+</div>
+
+@if (!hasQuery)
+{
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const url = new URL(window.location.href);
+            // 沒有任何 query 時自動加上「可報名課程」篩選
+            if (!url.search) {
+                url.searchParams.set("availableFilter", "available");
+                window.location.replace(url.toString());
+            }
+        });
+    </script>
+}
+
+<div class="course-list-content">
+    @foreach (var item in Model)
+    {
+        <a href="@Url.Action("GroupCourseDetail", "CourseSchedules", new { id = item.Course.CourseId })" style="text-decoration:none;">
+            <div class="course-card-list">
+                <div class="course-img">
+                    @if (item.Course.CourseImage != null)
+                    {
+                        <img src="data:image/jpeg;base64,@Convert.ToBase64String(item.Course.CourseImage)" alt="課程圖片" />
+                    }
+                    else
+                    {
+                        <img src="/images/default.png" alt="預設課程圖片" />
+                    }
+                </div>
+                <div class="course-title">@item.Course.Title</div>
+                <div class="course-coach">@item.CoachName 教練</div>
+            </div>
+        </a>
+    }
+</div>
+
+@Html.Raw(@"<style>
+body, html {
+    background: #f9f9f9;
+    margin: 0;
+    padding: 0;
+}
+.filter-bar {
+    display: flex;
+    gap: 1.1rem 0.5vw;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    margin: 4px 0 4px 0;
+}
+.filter-bar > div {
+    flex: 0 1 auto;
+    min-width: 140px;
+    margin-right: 10px;
+}
+.form-select {
+    width: 100%;
+    font-size: 1.09rem;
+    font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif !important;
+    color: #222;
+}
+@media (max-width: 600px) {
+    .filter-bar {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+    }
+    .filter-bar > div, .filter-bar form {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    .form-select {
+        width: 100%;
+    }
+}
+.course-list-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.1rem 2vw;
+    padding: 24px 2vw 32px 2vw;
+    justify-content: center;
+}
+.course-card-list {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 1px 8px #0001;
+    flex: 1 1 240px;
+    min-width: 160px;
+    max-width: 290px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 15px 18px;
+    transition: box-shadow .15s;
+    font-size: 1.06rem;
+    font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+}
+.course-card-list:hover {
+    box-shadow: 0 2px 16px #0002;
+}
+.course-img img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    background: #eee;
+    display: block;
+}
+.course-title {
+    font-size: 1.18rem;
+    font-weight: bold;
+    margin-top: 0.7rem;
+    margin-bottom: 0.18rem;
+    color: #222;
+}
+.course-coach {
+    font-size: 1.06rem;
+    color: #888;
+    font-weight: 500;
+    margin-bottom: 2px;
+}
+</style>")

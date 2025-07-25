@@ -1,0 +1,103 @@
+﻿@model List<fitPass.Models.ViewModels.InbodyMemberOverviewVM>
+
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
+
+
+    .table {
+        width: 100%; /* ✅ 表格內容撐滿 dashboard-box */
+        margin-bottom: 0;
+    }
+
+        .table tbody tr {
+            height: 60px;
+        }
+
+    .pagination {
+        margin-top: 12px !important;
+    }
+
+    .form-section {
+        margin-bottom: 24px;
+    }
+</style>
+
+<div class="dashboard-box">
+    <h2><i class="bi bi-clipboard2-pulse"></i> Inbody 健身數據管理</h2>
+
+    <!-- 🔍 搜尋表單 -->
+    <form method="get" class="form-section d-flex flex-wrap align-items-end">
+        <div class="me-2">
+            <label for="keyword" class="form-label">關鍵字搜尋</label>
+            <input type="text" name="keyword" class="form-control"
+                   value="@ViewData["Keyword"]?.ToString()" placeholder="輸入姓名或 Email" />
+        </div>
+        <div class="me-2">
+            <button type="submit" class="btn btn-primary mt-4">搜尋</button>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(ViewData["Keyword"]?.ToString()))
+        {
+            <div>
+                <a asp-action="InbodyOverview" class="btn btn-secondary mt-4">重置</a>
+            </div>
+        }
+    </form>
+
+    <!-- 📊 表格資料 -->
+    <table class="table table-bordered align-middle">
+        <thead class="table-dark">
+            <tr>
+                <th>會員姓名</th>
+                <th>Email</th>
+                <th>紀錄數</th>
+                <th>最近紀錄</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var member in Model)
+            {
+                <tr>
+                    <td>@member.Name</td>
+                    <td>@member.Email</td>
+                    <td>@member.InbodyCount 筆</td>
+                    <td>@(member.LatestRecordDate?.ToString("yyyy-MM-dd") ?? "尚無紀錄")</td>
+                    <td>
+                        <a asp-action="InbodyCreate" asp-route-memberId="@member.MemberId" class="btn btn-success btn-sm me-1">新增</a>
+                        <a asp-action="InbodyDetail" asp-route-memberId="@member.MemberId" class="btn btn-secondary btn-sm">檢視</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- 📄 分頁控制 -->
+    @{
+        int currentPage = (int)(ViewData["CurrentPage"] ?? 1);
+        int totalPages = (int)(ViewData["TotalPages"] ?? 1);
+        string keyword = ViewData["Keyword"]?.ToString() ?? "";
+    }
+
+    <nav aria-label="分頁導航">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="InbodyOverview" asp-route-page="1" asp-route-keyword="@keyword">第一頁</a>
+            </li>
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                <a class="page-link" asp-action="InbodyOverview" asp-route-page="@(currentPage - 1)" asp-route-keyword="@keyword">上一頁</a>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">第 @currentPage 頁 / 共 @totalPages 頁</span>
+            </li>
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="InbodyOverview" asp-route-page="@(currentPage + 1)" asp-route-keyword="@keyword">下一頁</a>
+            </li>
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                <a class="page-link" asp-action="InbodyOverview" asp-route-page="@totalPages" asp-route-keyword="@keyword">最後一頁</a>
+            </li>
+        </ul>
+    </nav>
+</div>

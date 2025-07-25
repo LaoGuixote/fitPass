@@ -1,0 +1,76 @@
+﻿@model fitPass.Models.Inbody
+
+@{
+	ViewData["Title"] = "編輯 Inbody";
+}
+
+<div class="row">
+	<div class="col-md-4">
+		<form asp-action="Edit">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<input type="hidden" asp-for="InBodyId" />
+
+			<div class="form-group">
+				<label asp-for="RecordDate" class="control-label">紀錄時間</label>
+				<input asp-for="RecordDate" class="form-control" type="date"/>
+				<span asp-validation-for="RecordDate" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Height" class="control-label">身高</label>
+				<input asp-for="Height" class="form-control" />
+				<span asp-validation-for="Height" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Weight" class="control-label">體重</label>
+				<input asp-for="Weight" class="form-control" />
+				<span asp-validation-for="Weight" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="BodyFat" class="control-label">體脂肪</label>
+				<input asp-for="BodyFat" class="form-control" />
+				<span asp-validation-for="BodyFat" class="text-danger"></span>
+			</div>
+			<div class="form-group">
+				<label asp-for="Bmr" class="control-label">BMR</label>
+				<input asp-for="Bmr" class="form-control" />
+				<span asp-validation-for="Bmr" class="text-danger"></span>
+			</div>
+			@* <div class="form-group">
+				<label asp-for="Note" class="control-label">備註</label>
+				<input asp-for="Note" class="form-control" />
+				<span asp-validation-for="Note" class="text-danger"></span>
+			</div> *@
+
+			<div class="form-group" style="display:none">
+				<label asp-for="GoalNote" class="control-label"></label>
+				<input asp-for="GoalNote" class="form-control" />
+				<span asp-validation-for="GoalNote" class="text-danger"></span>
+			</div>
+
+			<br />
+			<div class="form-group">
+				<input type="submit" value="修改" class="btn btn-success" />
+				<a asp-action="Index" class="btn btn-primary">取消</a>
+				<input name="delete" type="button" value="刪除" class="btn btn-danger" onclick="Confirmed()" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<form id="deleteForm" asp-action="Delete" asp-route-id="@Model.InBodyId" method="post" style="display:none;">
+	@Html.AntiForgeryToken()
+</form>
+
+<script>
+	function Confirmed(){
+		if (confirm("您確定要刪除這筆資料嗎？此操作無法復原！")) {
+			document.getElementById('deleteForm').submit();
+		}
+	}
+</script>
+
+@* @section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+} *@

@@ -1,0 +1,40 @@
+﻿@model fitPass.Models.Feedback
+
+@{
+	ViewData["Title"] = "發布意見";
+}
+
+<div class="row justify-content-center">
+	<div class="col-md-8 col-lg-6">
+		<form asp-action="Create" enctype="multipart/form-data">
+			@Html.AntiForgeryToken()
+			<div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+			<div class="form-group mb-3">
+				<label asp-for="Subject" class="form-label">主旨</label>
+				<input asp-for="Subject" class="form-control" placeholder="請簡述您的意見主旨" required />
+				<span asp-validation-for="Subject" class="text-danger"></span>
+			</div>
+
+			<div class="form-group mb-3">
+				<label asp-for="Message" class="form-label">內容</label>
+				<textarea asp-for="Message" class="form-control" rows="10" placeholder="請詳細描述您的意見或遇到的問題" required></textarea>
+				<span asp-validation-for="Message" class="text-danger"></span>
+			</div>
+
+			<div class="form-group mt-4">
+				<input type="submit" value="發布" class="btn btn-success w-100" />
+			</div>
+		</form>
+	</div>
+</div>
+
+<div class="mt-4 text-center">
+	<a asp-action="Index" class="btn btn-secondary">返回列表</a>
+</div>
+
+
+@* @section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    } *@

@@ -1,0 +1,81 @@
+﻿@model fitPass.Models.Account
+
+@{
+    ViewData["Title"] = "編輯帳戶啟用狀態";
+}
+
+<div class="dashboard-box">
+    <h2 class="mb-4">帳戶編輯</h2>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <form asp-action="AccountEdit" method="post">
+        <input type="hidden" asp-for="MemberId" />
+
+        <div class="mb-3">
+            <label asp-for="IsActive" class="form-label">帳戶啟用</label>
+            <select asp-for="IsActive" class="form-select">
+                <option value="true">啟用</option>
+                <option value="false">停用</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Admin" class="form-label">帳戶權限</label>
+            <select asp-for="Admin" class="form-select">
+                <option value="1">會員</option>
+                <option value="2">教練</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">目前點數</label>
+            <input type="text" class="form-control" value="@Model.Point" disabled />
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">新增點數</label>
+            <input type="number" name="AddPoint" class="form-control" value="0" min="0" />
+            <div class="form-text">輸入要加給會員的點數，輸入 0 表示不加</div>
+        </div>
+
+        <div class="text-end">
+            <button type="submit" class="btn btn-primary">儲存</button>
+            <a asp-action="AccountOverview" class="btn btn-secondary">取消</a>
+        </div>
+    </form>
+
+    @if (Model.PointLogs != null && Model.PointLogs.Any())
+    {
+        <hr />
+        <h4 class="mt-4">點數異動紀錄</h4>
+        <table class="table table-bordered mt-2">
+            <thead>
+                <tr>
+                    <th>異動時間</th>
+                    <th>原始點數</th>
+                    <th>異動後</th>
+                    <th>說明</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.PointLogs.OrderByDescending(p => p.AlterationTime))
+                {
+                    <tr>
+                        <td>@log.AlterationTime.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@log.OriginalPoint</td>
+                        <td>@log.FinallPoint</td>
+                        <td>@log.Detail</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted mt-4">目前沒有點數異動紀錄。</p>
+    }
+</div>

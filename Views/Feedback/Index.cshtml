@@ -1,0 +1,193 @@
+﻿@model IEnumerable<fitPass.Models.Feedback>
+
+@{
+	ViewData["Title"] = "聯繫客服";
+}
+
+<p>
+	<a asp-action="Create" class="btn btn-success">發布新意見</a>
+</p>
+
+<div class="row">
+	@if (!Model.Any())
+	{
+		<div class="col-12">
+			<div class="alert alert-info text-center" role="alert">
+				目前沒有意見反映。
+			</div>
+		</div>
+	}
+	else
+	{
+		@foreach (var item in Model)
+		{
+			<div class="col-md-12 mb-4">
+				<div class="card shadow-sm h-100">
+					<div class="card-body">
+						<div class="d-flex justify-content-between align-items-start mb-2">
+							<div>
+								<h5 class="card-title mb-1">主旨: @Html.DisplayFor(modelItem => item.Subject)</h5>
+								<h6 class="card-subtitle text-muted mb-0">發布時間: @Html.DisplayFor(modelItem => item.CreatedAt)</h6>
+							</div>
+								@{
+									string statusBadgeClass = "";
+									string statusText = "";
+									switch (item.Status)
+									{
+										case 1:
+											statusBadgeClass = "bg-warning text-dark"; // 未處理通常用黃色
+											statusText = "未處理";
+											break;
+										case 2:
+											statusBadgeClass = "bg-info text-dark"; // 處理中通常用藍色
+											statusText = "處理中";
+											break;
+										case 3:
+											statusBadgeClass = "bg-success"; // 已完成通常用綠色
+											statusText = "已完成";
+											break;
+									}
+								}
+								<span class="badge @statusBadgeClass fs-5">@statusText</span>
+						</div>
+						<hr />
+						<p class="card-text">@Html.DisplayFor(modelItem => item.Message)</p>
+
+						<button class="btn btn-sm btn-outline-primary mb-3" type="button" data-bs-toggle="collapse"
+								data-bs-target="#comments-@item.FeedbackId" aria-expanded="false"
+								aria-controls="comments-@item.FeedbackId">
+							@if (item.FeedbackComments != null && item.FeedbackComments.Any())
+							{
+								<span>查看回覆</span>
+							}
+							else
+							{
+								<span>尚未回覆</span>
+							}
+						</button>
+
+						<div class="collapse" id="comments-@item.FeedbackId">
+							<div class="comments-section mb-3" id="comments-list-@item.FeedbackId">
+								@if (item.FeedbackComments != null && item.FeedbackComments.Any())
+								{
+									@foreach (var c in item.FeedbackComments.OrderBy(x => x.CreatedAt))
+									{
+										if (c.Admin == true)
+										{
+											<div class="d-flex justify-content-start mb-2">
+												<div class="card card-body bg-light mb-2 p-2" style="max-width: 80%;">
+													<small class="text-muted">時間: @c.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")</small>
+													<p class="mb-0">管理者回覆: @c.CommentText</p>
+												</div>
+											</div>
+										}
+										else
+										{
+											<div class="d-flex justify-content-end mb-2">
+												<div class="card card-body bg-success text-white p-2" style="max-width: 80%;">
+													<small class="text-muted">時間: @c.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")</small>
+													<p class="mb-0">您的回覆: @c.CommentText</p>
+												</div>
+											</div>
+										}
+									}
+								}
+								else
+								{
+									<p class="text-muted small">目前沒有回覆。</p>
+								}
+							</div>
+							<div class="reply-form mt-3">
+								<form class="ajax-comment-form" data-feedback-id="@item.FeedbackId">
+									@Html.AntiForgeryToken()
+									<input type="hidden" name="feedbackId" value="@item.FeedbackId" />
+									<div class="input-group">
+										<input type="text" name="commentText" class="form-control comment-input" placeholder="輸入您的回覆..." aria-label="回覆意見" required />
+										<button class="btn btn-outline-secondary" type="submit">送出</button>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		}
+	}
+</div>
+
+<script>
+			$(document).ready(function () {
+				$('.ajax-comment-form').on('submit', function (e) {
+					e.preventDefault();
+
+					var form = $(this);
+					var feedbackId = form.data('feedback-id');
+					var commentText = form.find('.comment-input').val();
+					var antiForgeryToken = form.find('input[name="__RequestVerificationToken"]').val();
+
+					if (!commentText.trim()) {
+						return;
+					}
+
+					$.ajax({
+						url: '@Url.Action("AddComment", "Feedback")',
+						type: 'POST',
+						data: {
+							feedbackId: feedbackId,
+							commentText: commentText,
+							__RequestVerificationToken: antiForgeryToken
+						},
+						success: function (response) {
+							if (response.success) {
+								var newComment = response.comment;
+
+								// 1. 建立新的留言 HTML 元素 (包含管理員/使用者判斷)
+								var commentHtml = `
+	<div class="d-flex justify-content-end mb-2">
+		<div class="card card-body bg-success text-white p-2" style="max-width: 80%;">
+			<small class="text-muted">時間: ${newComment.createdAt}</small>
+			<p class="mb-0">您的回覆: ${newComment.commentText}</p>
+		</div>
+	</div>
+									`;
+
+								// 2. 將新的留言直接追加到正確的回應列表容器中
+								var commentsListContainer = $('#comments-list-' + feedbackId);
+
+								// 檢查是否存在「目前沒有回覆。」這段文字，如果存在就移除它
+								// 這裡我們直接選取 commentsListContainer 內的所有直接子 p 元素
+								var noCommentP = commentsListContainer.children('p.text-muted.small');
+								if (noCommentP.length > 0) {
+									noCommentP.remove();
+								}
+
+								// 直接將新生成的留言 HTML 追加到容器的末尾
+								commentsListContainer.append(commentHtml);
+
+
+								// 3. 清空輸入框
+								form.find('.comment-input').val('');
+
+								// 4. 不再計算或更新留言筆數，按鈕文字保持不變
+								// 如果需要，可以考慮在這裡讓按鈕從「尚未回覆」變為「查看回覆」
+								var commentCountButton = form.closest('.card-body').find('button[data-bs-toggle="collapse"]');
+								if (commentCountButton.text().includes("尚未回覆")) {
+									commentCountButton.text("查看回覆"); // 首次留言後改變按鈕文字
+								}
+
+
+								// 5. 如果摺疊區塊是關閉的，自動展開它
+								$('#comments-' + feedbackId).collapse('show');
+
+							} else {
+								alert('提交失敗: ' + response.message);
+							}
+						},
+						error: function (xhr, status, error) {
+							alert('提交時發生錯誤，請稍後再試。');
+							console.error('AJAX Error:', status, error, xhr.responseText);
+						}
+					});
+				});
+			});
+</script>

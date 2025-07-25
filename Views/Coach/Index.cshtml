@@ -1,0 +1,26 @@
+﻿@model fitPass.ViewModels.CoachDashboardViewModel
+@{
+    ViewData["Title"] = "教練首頁";
+}
+
+<h2>歡迎，@Model.Name 教練！</h2>
+
+@if (Model.CoachPhoto != null)
+{
+    <img src="@Model.CoachPhoto" alt="教練照片" width="150" style="border-radius: 8px;" />
+}
+
+<div class="mt-3">
+    <p><strong>專長：</strong> @Model.Specialty</p>
+    <p><strong>簡介：</strong> @Model.Description</p>
+</div>
+
+<hr />
+
+<div class="mt-4">
+    <h4>近期統計</h4>
+    <ul>
+        <li>即將上課堂數：@Model.UpcomingClassCount</li>
+        <li>已排時段數量：@Model.ScheduledSlotsCount</li>
+    </ul>
+</div>

@@ -1,0 +1,27 @@
+﻿@model fitPass.Models.News
+@{
+    ViewData["Title"] = "最新消息";
+}
+
+    <div class="fitpass-card mb-3">
+        <h5 class="text-title-md">@Model.Title</h5>
+        <small>
+            @if (Model.Showtime.HasValue)
+            {
+                @Model.Showtime.Value.ToString("yyyy/MM/dd")
+            }
+            else if (Model.PublishTime.HasValue)
+            {
+                @Model.PublishTime.Value.ToString("yyyy/MM/dd")
+            }
+
+        </small>
+
+        @if (Model.Insideimg != null)
+        {
+            var base64 = "data:image/png;base64," + Convert.ToBase64String(Model.Insideimg);
+            <img src="@base64" class="img-fluid rounded my-2" />
+        }
+
+        <p class="text-info-sm mt-2">@Html.Raw(Model.Content?.Replace("\n", "<br/>"))</p>
+    </div>

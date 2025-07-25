@@ -1,0 +1,86 @@
+﻿@model List<News>
+@{
+    ViewData["Title"] = "公告列表";
+}
+
+
+
+<div class="dashboard-box">
+<h2>📰 公告列表</h2>
+    <form method="get" asp-action="NewsList" class="row row-cols-lg-auto g-3 align-items-center mb-3">
+        <div class="col-auto">
+            <input type="text" name="keyword" class="form-control" placeholder="搜尋標題關鍵字"
+                   value="@ViewData["Keyword"]" />
+        </div>
+
+        <div class="col-auto">
+            <select name="category" class="form-select">
+                <option value="">全部分類</option>
+                @foreach (var item in ViewData["CategoryList"] as List<SelectListItem>)
+                {
+                    <option value="@item.Value" selected="@(item.Value == (string?)ViewData["SelectedCategory"])">
+                        @item.Text
+                    </option>
+                }
+            </select>
+        </div>
+
+        <div class="col-auto form-check">
+            <input type="checkbox" name="dueToday" value="true" class="form-check-input" id="dueTodayCheck"
+                   @(Convert.ToBoolean(ViewData["DueToday"]) ? "checked" : "") />
+            <label class="form-check-label ms-1" for="dueTodayCheck">僅顯示今日到期</label>
+        </div>
+
+        <div class="col-auto">
+            <button type="submit" class="btn btn-outline-primary">搜尋</button>
+            <a asp-action="NewsList" class="btn btn-outline-secondary">重設</a>
+        </div>
+        <div class="col-auto">
+            <a class="btn btn-outline-info ms-2" asp-controller="News" asp-action="Index" target="_blank">
+                🔍 查看前台公告
+            </a>
+        </div>
+    </form>
+
+
+<table class="table table-striped table-bordered mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>標題</th>
+            <th>類別</th>
+            <th>發布時間</th>
+            <th>顯示狀態</th>
+            <th>優先指數</th>
+            <th>操作</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Title</td>
+                <td>@item.Category</td>
+                <td>@item.PublishTime?.ToString("yyyy/MM/dd HH:mm")</td>
+                <td>
+                    @if (item.IsVisible == true)
+                    {
+                        <span class="text-success">顯示中</span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">已隱藏</span>
+                    }
+                </td>
+                <td>@item.Level</td>
+                <td>
+                    <a class="btn btn-sm btn-outline-primary" asp-action="NewsDetail" asp-route-id="@item.NewsId">查看</a>
+                    <a class="btn btn-sm btn-outline-warning" asp-action="EditNews" asp-route-id="@item.NewsId">編輯</a>
+                    <!-- 刪除按鈕之後加 -->
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-primary" asp-action="CreateNews">➕ 新增公告</a>
+</div>

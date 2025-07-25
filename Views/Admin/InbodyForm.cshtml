@@ -1,0 +1,53 @@
+﻿@model fitPass.Models.Inbody
+@{
+    ViewData["Title"] = Model.InBodyId == 0 ? "新增 Inbody" : "編輯 Inbody";
+}
+
+
+
+<div class="dashboard-box">
+<h2>@ViewData["Title"] - @ViewBag.MemberName</h2>
+
+<form asp-action="@(Model.InBodyId == 0 ? "InbodyCreate" : "InbodyEdit")" method="post">
+    <input type="hidden" asp-for="InBodyId" />
+    <input type="hidden" asp-for="MemberId" />
+
+    <div class="form-group">
+        <label asp-for="RecordDate" class="form-label"></label>
+        <input asp-for="RecordDate" class="form-control" type="date" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Height" class="form-label"></label>
+        <input asp-for="Height" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Weight" class="form-label"></label>
+        <input asp-for="Weight" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="BodyFat" class="form-label"></label>
+        <input asp-for="BodyFat" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Bmr" class="form-label"></label>
+        <input asp-for="Bmr" class="form-control" />
+    </div>
+
+    <div class="form-group">
+        <label asp-for="Note" class="form-label"></label>
+        <textarea asp-for="Note" class="form-control"></textarea>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="GoalNote" class="form-label"></label>
+        <textarea asp-for="GoalNote" class="form-control"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">儲存</button>
+    <a asp-action="InbodyOverview" class="btn btn-secondary mt-3">返回</a>
+</form>
+</div>

@@ -1,0 +1,235 @@
+﻿@model IEnumerable<fitPass.Models.Inbody>
+
+@{
+	ViewData["Title"] = "我的 Inbody";
+}
+
+<div class="mb-3 data">
+	<h2>數據趨勢圖</h2>
+
+	<div class="row align-items-end">
+		<div class="col-12 col-md-3">
+			<div class="d-flex align-items-center">
+				<label for="chartSelector" class="form-label me-2 mb-0 text-nowrap">圖表類型:</label>
+				<select id="chartSelector" class="form-select">
+					<option value="weight">體重</option>
+					<option value="bmi">BMI</option>
+					<option value="bodyFat">體脂肪</option>
+					<option value="bmr">基礎代謝率</option>
+				</select>
+			</div>
+		</div>
+
+		<div class="col-12 col-sm-6 col-md-3">
+			<div class="d-flex align-items-center">
+				<label for="startDate" class="form-label me-2 mb-0 text-nowrap">開始日期:</label>
+				<input type="date" id="startDate" class="form-control" />
+			</div>
+		</div>
+
+		<div class="col-12 col-sm-6 col-md-3">
+			<div class="d-flex align-items-center">
+				<label for="endDate" class="form-label me-2 mb-0 text-nowrap">結束日期:</label>
+				<input type="date" id="endDate" class="form-control" />
+			</div>
+		</div>
+
+		<div class="col-12 col-md-3 d-grid d-md-block"> <button id="applyFilterBtn" class="btn btn-success w-100">篩選</button> </div>
+	</div>
+</div>
+
+<div class="chart-container data" style="position: relative; height:40vh; width:auto">
+	<canvas id="inbodyChart"></canvas>
+</div>
+
+<div>
+	<h2 class="data">歷史數據</h2>
+</div>
+@if (Model != null && Model.Any())
+{
+	<table class="table table-bordered table-striped">
+		<thead>
+			<tr>
+				<th>測量日期</th>
+				<th>身高</th>
+				<th>體重</th>
+				<th>BMI</th>
+				<th>體脂肪</th>
+				<th>BMR</th>
+				@* <th>備註</th> *@
+				<th>功能</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in Model.Reverse())
+			{
+				<tr>
+					<td>@item.RecordDate</td>
+					<td>@item.Height</td>
+					<td>@item.Weight</td>
+					<td>@(Math.Round(((double)item.Weight! / Math.Pow(((double)item.Height! / 100), 2)), 1))</td>
+					<td>@item.BodyFat</td>
+					<td>@item.Bmr</td>
+					@* <td>@item.Note</td> *@
+					<td>
+						<a asp-action="Edit" asp-route-id="@item.InBodyId" class="btn btn-success w-100">編輯</a>
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
+else
+{
+	<h2>目前沒有 Inbody 數據可顯示。</h2>
+	<br />
+}
+
+<a asp-action="Create" class="btn btn-success btn-lg w-100">新增紀錄</a>
+
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+	let myChart;
+	let originalInbodyData; // 儲存原始完整數據
+
+	document.addEventListener('DOMContentLoaded', function () {
+		// 從後端獲取完整數據
+		originalInbodyData = @Html.Raw(Json.Serialize(Model));
+
+		const chartSelector = document.getElementById('chartSelector');
+		const startDateInput = document.getElementById('startDate');
+		const endDateInput = document.getElementById('endDate');
+		const applyFilterBtn = document.getElementById('applyFilterBtn');
+
+		// 初始化日期輸入框為合理範圍 (可選)
+		if (originalInbodyData.length > 0) {
+			const firstDate = new Date(originalInbodyData[0].recordDate);
+			const lastDate = new Date(originalInbodyData[originalInbodyData.length - 1].recordDate);
+			startDateInput.valueAsDate = firstDate;
+			endDateInput.valueAsDate = lastDate;
+		} else{
+			document.querySelectorAll(".data").forEach(x => x.style.display = "none")
+		}
+
+		// 主要篩選和更新函數
+		function filterAndUpdate() {
+			const selectedChartType = chartSelector.value;
+			const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+			const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+
+			// 篩選數據
+			const filteredData = originalInbodyData.filter(data => {
+				const recordDate = new Date(data.recordDate);
+				// 將日期時間部分歸零，只比較日期部分
+				// recordDate.setHours(0, 0, 0, 0);
+				// if (startDate) startDate.setHours(0, 0, 0, 0);
+				// if (endDate) endDate.setHours(0, 0, 0, 0);
+
+				const isAfterStart = !startDate || recordDate >= startDate;
+				const isBeforeEnd = !endDate || recordDate <= endDate; // <= 包含結束日當天
+
+				return isAfterStart && isBeforeEnd;
+			});
+
+			// 更新圖表
+			updateChart(selectedChartType, filteredData); // 傳入篩選後的數據
+		}
+
+		// 更新圖表的函數，現在需要接收數據參數
+		function updateChart(chartType, dataToDisplay) {
+			if (myChart) {
+				myChart.destroy();
+			}
+
+			// 提取篩選後的數據
+			const recordDates = dataToDisplay.map(data => data.recordDate ? new Date(data.recordDate).toLocaleDateString() : 'N/A');
+			const weights = dataToDisplay.map(data => data.weight);
+			const bmi = dataToDisplay.map(data => Math.round(data.weight / ((data.height * 0.01) ** 2) * 10) / 10 );
+
+			const bodyFats = dataToDisplay.map(data => data.bodyFat);
+			const bmrs = dataToDisplay.map(data => data.bmr);
+
+			let dataset = {};
+			let chartTitle = "";
+			let yAxisLabel = "";
+			let rawDataForChart = []; // 用來存儲選定指標的原始數值
+
+			switch (chartType) {
+				case 'weight':
+					rawDataForChart = weights;
+					chartTitle = "體重趨勢";
+					yAxisLabel = "體重 (公斤)";
+					dataset = { label: '體重 (公斤)', data: rawDataForChart, borderColor: 'rgb(34, 139, 34)', tension: 0.1, fill: false };
+					break;
+				case 'bmi':
+					rawDataForChart = bmi;
+					chartTitle = "BMI趨勢";
+					yAxisLabel = "BMI";
+					dataset = { label: 'BMI', data: rawDataForChart, borderColor: 'rgb(34, 139, 34)', tension: 0.1, fill: false };
+					break;
+				case 'bodyFat':
+					rawDataForChart = bodyFats;
+					chartTitle = "體脂肪趨勢";
+					yAxisLabel = "體脂肪 (%)";
+					dataset = { label: '體脂肪 (%)', data: rawDataForChart, borderColor: 'rgb(34, 139, 34)', tension: 0.1, fill: false };
+					break;
+				case 'bmr':
+					rawDataForChart = bmrs;
+					chartTitle = "基礎代謝率趨勢";
+					yAxisLabel = "基礎代謝率 (大卡)";
+					dataset = { label: '基礎代謝率 (大卡)', data: rawDataForChart, borderColor: 'rgb(34, 139, 34)', tension: 0.1, fill: false };
+					break;
+			}
+
+			const filteredChartData = rawDataForChart.map(val => val === null ? NaN : val);
+
+			const ctx = document.getElementById('inbodyChart').getContext('2d');
+			myChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: recordDates,
+					datasets: [{
+						...dataset,
+						data: filteredChartData
+					}]
+				},
+				options: {
+					responsive: true,
+					maintainAspectRatio: false,
+					plugins: {
+						title: {
+							display: true,
+							text: chartTitle,
+							font: { size: 18 }
+						},
+						legend: {
+							display: false
+						},
+						tooltip: {
+							intersect: false
+						}
+					},
+					scales: {
+						x: {
+							title: { display: true, text: '測量日期' }
+						},
+						y: {
+							beginAtZero: false,
+							title: { display: true, text: yAxisLabel }
+						}
+					}
+				}
+			});
+		}
+
+		// 更新表格的函數
+
+		// 事件監聽器
+		chartSelector.addEventListener('change', filterAndUpdate);
+		applyFilterBtn.addEventListener('click', filterAndUpdate);
+
+		// 頁面載入時，執行一次篩選和更新以顯示初始數據和圖表
+		filterAndUpdate();
+	});
+</script>

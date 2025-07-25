@@ -1,0 +1,43 @@
+﻿@model IEnumerable<fitPass.Models.SubscriptionLog>
+
+@{
+	ViewData["Title"] = "訂閱紀錄";
+}
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>
+				訂閱時間
+			</th>
+			<th>
+				會籍開始日期
+			</th>
+			<th>
+				會籍結束日期
+			</th>
+			<th>
+				訂閱類型
+			</th>
+		</tr>
+	</thead>
+	<tbody>
+		@foreach (var item in Model)
+		{
+			<tr>
+				<td>
+					@Html.DisplayFor(modelItem => item.SubscribedTime)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.StartDate)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.EndDate)
+				</td>
+				<td>
+					@Html.DisplayFor(modelItem => item.SubscriptionType)
+				</td>
+			</tr>
+		}
+	</tbody>
+</table>

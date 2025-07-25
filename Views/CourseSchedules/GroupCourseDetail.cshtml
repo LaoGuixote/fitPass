@@ -1,0 +1,205 @@
+﻿@{
+    ViewData["Title"] = "課程報名";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model fitPass.Models.CourseSchedule
+
+<div class="container my-4">
+    <div class="card mx-auto" style="max-width:430px;">
+        <div class="card-body">
+            <!-- 課程圖片 -->
+            <div class="mb-3 text-center">
+                @if (Model.CourseImage != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(Model.CourseImage)" alt="課程圖片" class="rounded shadow-sm w-100" style="max-width:320px;" />
+                }
+                else
+                {
+                    <img src="/images/default.png" alt="預設課程圖片" class="rounded shadow-sm w-100" style="max-width:320px;" />
+                }
+            </div>
+            <!-- 課程資訊 -->
+            <h4 class="card-title mb-1">@Model.Title</h4>
+            <div class="mb-2 text-muted">@ViewBag.DateRange</div>
+            <div class="mb-2"><span class="fw-bold">課程時間：</span>@ViewBag.TimeString</div>
+            <div class="mb-2"><span class="fw-bold">課程教練：</span>@ViewBag.CoachName</div>
+            <div class="mb-2"><span class="fw-bold">地點：</span>@ViewBag.Location</div>
+            <div class="mb-2">
+                <span class="fw-bold">報名人數：</span>
+                <span style="color:@((ViewBag.CurrentCount >= ViewBag.MaxCount) ? "#e23e36" : "#1abc60")">
+                    @ViewBag.CurrentCount / @ViewBag.MaxCount
+                </span>
+            </div>
+            <div class="mb-3"><span class="fw-bold">課程介紹：</span>@Model.Description</div>
+
+
+            <!-- 按鈕區 -->
+            @{
+                var isFull = (ViewBag.CurrentCount >= ViewBag.MaxCount);
+                bool hasReserved = ViewBag.HasReserved != null && (bool)ViewBag.HasReserved;
+                var classTimeStart = (DateOnly?)ViewBag.ClassTimeStart;
+                var isExpired = classTimeStart.HasValue && classTimeStart.Value <= DateOnly.FromDateTime(DateTime.Today);
+
+            }
+
+            @if (isExpired)
+{
+    <div class="text-danger fw-bold text-center mb-2" style="font-size: 1.1rem;">
+        ⚠️ 已過報名日期，無法報名或取消
+    </div>
+}
+            <div class="d-grid gap-2 mb-2">
+@if (isFull)
+{
+    <button class="btn btn-secondary" disabled>名額已滿</button>
+    <div class="text-danger mt-2">課程人數已達上限，請選擇其他場次</div>
+}
+else if (hasReserved)
+{
+    <button class="btn btn-secondary" disabled>已報名</button>
+}
+else if (isExpired)
+{
+    <button class="btn btn-secondary" onclick="showExpired('已開始上課，無法報名')" disabled style="cursor:not-allowed;">報名團課</button>
+}
+else
+{
+    <button class="btn btn-success" onclick="showConfirm()">報名團課</button>
+}
+
+            </div>
+            <div class="d-grid gap-2">
+@if (hasReserved)
+{
+    if (isExpired)
+    {
+        <button class="btn btn-secondary" onclick="showExpired('已開始上課，無法取消報名')" disabled style="cursor:not-allowed;">取消報名</button>
+    }
+    else
+    {
+        <button class="btn btn-danger" onclick="showCancelConfirm()">取消報名</button>
+    }
+}
+else
+{
+    <button class="btn btn-secondary" disabled>取消報名</button>
+}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 彈跳視窗 (注意：放在container/card外面) -->
+<div id="confirmModal" class="modal-bg" style="display:none;">
+    <div class="modal-window">
+        <div id="modalMsg" style="margin-bottom:10px;">是否確定報名課程？</div>
+        <div id="modalBtns" style="display: flex; gap: 10px; justify-content: center;">
+            <button onclick="confirmSignUp()" class="btn btn-success">是</button>
+            <button onclick="hideConfirm()" class="btn btn-secondary">否</button>
+        </div>
+    </div>
+</div>
+
+<style>
+
+body, .container, .card, .card-body, .card-title, .mb-2, .mb-3, .fw-bold, .text-muted, .btn, .modal-window {
+  font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+  /* line-height 適度拉高，整體更舒適 */
+  line-height: 1.8;
+  font-size: 1.08rem;
+}
+
+.card-title { font-size: 1.4rem; font-weight: bold; letter-spacing: 1px; }
+.fw-bold { font-weight: 600; }
+.btn { font-size: 1.09rem; }
+.modal-window { font-size: 1.1rem; }
+
+
+/* ---- modal 樣式 ---- */
+.modal-bg {
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.28);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+}
+.modal-window {
+    background: #fff;
+    border-radius: 14px;
+    padding: 28px 28px 18px 28px;
+    min-width: 160px;
+    max-width: 92vw;
+    box-shadow: 0 6px 32px #0004;
+    text-align: center;
+}
+</style>
+
+<script>
+function showConfirm() {
+    document.getElementById('modalMsg').innerText = '是否確定報名課程？';
+    document.getElementById('modalBtns').innerHTML =
+        `<button onclick="confirmSignUp()" class="btn btn-success">是</button>
+         <button onclick="hideConfirm()" class="btn btn-secondary">否</button>`;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+function hideConfirm() {
+    document.getElementById('confirmModal').style.display = 'none';
+}
+function confirmSignUp() {
+    fetch('/CourseSchedules/AjaxSignUp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'courseId=' + encodeURIComponent('@Model.CourseId')
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('modalMsg').innerText = data.message;
+        document.getElementById('modalBtns').innerHTML =
+            `<button onclick="hideConfirm()" class="btn btn-success" style="min-width:88px;">確定</button>`;
+        if (data.success) {
+            setTimeout(function () { location.reload(); }, 800);
+        }
+    })
+    .catch(error => {
+        document.getElementById('modalMsg').innerText = '報名失敗，請稍後再試！';
+        document.getElementById('modalBtns').innerHTML =
+            `<button onclick="hideConfirm()" class="btn btn-secondary" style="min-width:88px;">關閉</button>`;
+    });
+}
+function showCancelConfirm() {
+    document.getElementById('modalMsg').innerText = '確定要取消報名嗎？';
+    document.getElementById('modalBtns').innerHTML =
+        `<button onclick="cancelSignUp()" class="btn btn-danger">是</button>
+         <button onclick="hideConfirm()" class="btn btn-secondary">否</button>`;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+function cancelSignUp() {
+    fetch('/CourseSchedules/AjaxCancelSignUp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'courseId=' + encodeURIComponent('@Model.CourseId')
+    })
+    .then(res => res.json())
+    .then(data => {
+        document.getElementById('modalMsg').innerText = data.message;
+        document.getElementById('modalBtns').innerHTML =
+            `<button onclick="hideConfirm()" class="btn btn-success" style="min-width:88px;">確定</button>`;
+        if (data.success) {
+            setTimeout(function () { location.reload(); }, 800);
+        }
+    })
+    .catch(error => {
+        document.getElementById('modalMsg').innerText = '取消失敗，請稍後再試！';
+        document.getElementById('modalBtns').innerHTML =
+            `<button onclick="hideConfirm()" class="btn btn-secondary" style="min-width:88px;">關閉</button>`;
+    });
+}
+
+function showExpired(message) {
+    document.getElementById('modalMsg').innerText = message;
+    document.getElementById('modalBtns').innerHTML =
+        `<button onclick="hideConfirm()" class="btn btn-secondary" style="min-width:88px;">關閉</button>`;
+    document.getElementById('confirmModal').style.display = 'flex';
+}
+</script>

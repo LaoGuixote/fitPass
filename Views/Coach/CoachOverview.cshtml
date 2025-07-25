@@ -1,0 +1,49 @@
+﻿@model fitPass.ViewModels.CoachTypeOverviewViewModel
+@{
+    ViewData["Title"] = "教練師資";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-wrapper">
+
+    <h5 class="text-title-md mb-3" style="font-size: 1.2rem">可預約教練</h5>
+    <div class="row">
+        @foreach (var coach in Model.PrivateCoach)
+        {
+                <div class="col-6 col-md-4 mb-4">
+                    <div class="fitpass-card h-100 d-flex flex-column">
+                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId">
+                            <img src="@(coach.CoachPhoto ?? "/images/default-coach.png")"
+                                 class="img-fluid rounded "
+                                 style="height: 170px; width: 100%; object-fit: contain;" />
+                        </a>
+                        <div class="text-title-md " style="letter-spacing: 0.2rem">@coach.Name</div>
+                        <div class="text-info-sm text-muted mb-1">@coach.Specialty</div>
+                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId" class="btn-green mt-auto w-100" style="text-align: center">查看詳情</a>
+                    </div>
+                </div>
+        }
+    </div>
+
+    <hr />
+
+    <h5 class="text-title-md mb-3" style="font-size: 1.2rem">團體課教練</h5>
+    <div class="row">
+        @foreach (var coach in Model.GroupCoach)
+        {
+                <div class="col-6 col-md-4 mb-4">
+                    <div class="fitpass-card h-100 d-flex flex-column">
+                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId">
+                            <img src="@(coach.CoachPhoto ?? "/images/default-coach.png")"
+                                 class="img-fluid rounded "
+                                 style="height: 220px; width: 100%; object-fit: cover;" />
+                        </a>
+                        <div class="text-title-md " style="letter-spacing: 0.2rem">@coach.Name</div>
+                        <div class="text-info-sm text-muted mb-1">@coach.Specialty</div>
+                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId" class="btn-green mt-auto w-100" style="text-align: center">查看詳情</a>
+                    </div>
+                </div>
+        }
+    </div>
+
+</div>

@@ -1,0 +1,315 @@
+/* 基本重設與字體 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+/* 導覽列與頁首 */
+/*header {
+    background: #333;
+    color: #fff;
+    padding: 40px 0;
+    text-align: center;
+}*/
+
+header h1 {
+    margin-bottom: 10px;
+    font-size: 2.8em;
+}
+
+header p {
+    font-size: 1.2em;
+    opacity: 0.9;
+}
+
+/* 方案區塊 */
+#plans {
+    padding: 50px 0;
+    text-align: center;
+}
+
+#plans h2 {
+    font-size: 2.5em;
+    margin-bottom: 40px;
+    color: #333;
+}
+
+.plan-cards {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 30px;
+}
+
+.plan-card {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    width: calc(33% - 20px); /* 三欄佈局，考慮 gap */
+    min-width: 300px; /* 最小寬度避免過小 */
+    text-align: left;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.plan-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+/* .plan-card.featured {
+    border: 3px solid #007bff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px); /* 稍微提升突顯特色 */
+} */
+
+.plan-card h3 {
+    font-size: 1.8em;
+    color: #007bff;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.plan-card .price {
+    font-size: 2.5em;
+    font-weight: 700;
+    color: #28a745;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.plan-card .price span {
+    font-size: 0.5em;
+    font-weight: 400;
+    color: #555;
+}
+
+.plan-card ul {
+    list-style: none;
+    margin-bottom: 30px;
+    flex-grow: 1; /* 讓列表內容撐開空間 */
+}
+
+.plan-card ul li {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+}
+
+.plan-card ul li:last-child {
+    border-bottom: none;
+}
+
+.plan-card ul li .icon-check {
+    color: #28a745;
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.plan-card ul li .icon-x {
+    color: #dc3545;
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+/* 簡易圖標 (實際項目可替換為 Font Awesome 等) */
+.icon-check::before { content: '✓'; }
+.icon-x::before { content: '✕'; }
+
+
+.buy-button {
+    display: block;
+    width: 100%;
+    padding: 15px 20px;
+    background: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.buy-button:hover {
+    background: #0056b3;
+}
+
+/* 聯絡資訊區塊 */
+#contact {
+    background: #e9ecef;
+    padding: 50px 0;
+    text-align: center;
+    margin-top: 40px;
+}
+
+#contact h2 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+#contact p {
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+/* 頁腳 */
+/*footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 30px;
+}*/
+
+/* 彈出視窗 (Modal) */
+.modal {
+    display: none; /* 預設隱藏 */
+    position: fixed; /* 保持在螢幕上 */
+    z-index: 1; /* 位於最上層 */
+    left: 0;
+    top: 0;
+    width: 100%; /* 完整寬度 */
+    height: 100%; /* 完整高度 */
+    overflow: auto; /* 如果內容太多可滾動 */
+    background-color: rgba(0,0,0,0.4); /* 半透明背景 */
+    justify-content: center; /* 水平居中 */
+    align-items: center; /* 垂直居中 */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 500px;
+    border-radius: 10px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.modal-content h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.modal-content p {
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    text-align: center;
+}
+
+.modal-content p strong {
+    color: #007bff;
+}
+
+.close-button {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    position: absolute;
+    top: 10px;
+    right: 20px;
+}
+
+.close-button:hover,
+.close-button:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 700;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"] {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.submit-button {
+    width: 100%;
+    padding: 15px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+    background-color: #218838;
+}
+
+/* RWD 響應式設計 */
+@media (max-width: 768px) {
+    .plan-card {
+        width: calc(50% - 20px); /* 兩欄佈局 */
+    }
+}
+
+@media (max-width: 480px) {
+    header h1 {
+        font-size: 2em;
+    }
+
+    #plans h2, #contact h2 {
+        font-size: 2em;
+    }
+
+    .plan-card {
+        width: 90%; /* 單欄佈局 */
+        min-width: unset;
+    }
+
+    .plan-card h3 {
+        font-size: 1.5em;
+    }
+
+    .plan-card .price {
+        font-size: 2em;
+    }
+
+    .modal-content {
+        width: 95%;
+        padding: 20px;
+    }
+}

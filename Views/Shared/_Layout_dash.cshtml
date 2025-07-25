@@ -1,0 +1,209 @@
+﻿@{
+    Layout = null;
+    var title = ViewData["Title"] ?? "後台管理";
+    var currentAction = ViewContext.RouteData.Values["Action"]?.ToString();
+    var currentController = ViewContext.RouteData.Values["Controller"]?.ToString();
+    var userName = Context.Session.GetString("UserName") ?? "訪客";
+}
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - fitPass後台</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/fitPass.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote.min.css" rel="stylesheet" />
+
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            overflow: hidden; /* ✅ 全頁無捲動 */
+        }
+
+        .sidebar {
+            width: 220px;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            background-color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            padding-top: 40px;
+        }
+
+            .sidebar .nav-link {
+                color: #404040;
+                font-weight: 500;
+                font-size: 16px;
+                padding: 12px 20px;
+                display: flex;
+                align-items: center;
+            }
+
+                .sidebar .nav-link i {
+                    font-size: 20px;
+                    margin-right: 12px;
+                    color: #00D956;
+                }
+
+                .sidebar .nav-link.active {
+                    background-color: #F6F6F6;
+                    border-radius: 8px;
+                }
+
+            .sidebar .logo {
+                font-size: 28px;
+                font-weight: bold;
+                color: #00D956;
+                text-align: center;
+                margin-bottom: 30px;
+            }
+
+            .sidebar .user-box {
+                padding: 16px;
+                display: flex;
+                align-items: center;
+                justify-content: space-between; 
+                gap: 10px;
+                border-top: 1px solid #eee;
+            }
+
+                .sidebar .user-box img {
+                    border-radius: 50%;
+                    width: 40px;
+                    height: 40px;
+                    object-fit: cover;
+                }
+
+                .sidebar .user-box span {
+                    font-size: 16px;
+                    font-weight: 600;
+                    color: #404040;
+                }
+
+                .sidebar .user-box a i {
+                    cursor: pointer;
+                    transition: color 0.2s;
+                }
+
+                    .sidebar .user-box a i:hover {
+                        color: #dc3545; 
+                    }
+
+        .content-area {
+            margin-left: 220px;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #ffffff;
+            padding: 32px;
+            box-sizing: border-box;
+        }
+
+        .main-container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dashboard-box {
+            background-color: #F6F6F6;
+            border-radius: 12px;
+            padding: 24px;
+            flex: 1 1 auto;
+            overflow: auto;
+        }
+
+        /* ✅ 原本的樣式保留，不影響全站 UI */
+        *:focus,
+        *:active {
+            outline: none !important;
+        }
+
+        /* ✅ 專門針對 sidebar、導覽列等要禁止選取的區塊 */
+        .sidebar,
+        .nav-link,
+        .user-box {
+            caret-color: transparent !important;
+            user-select: none !important;
+        }
+
+        /* ✅ 保留 TinyMCE 的輸入功能 */
+        .tox-tinymce *,
+        .tox-tinymce [contenteditable],
+        .tox-tinymce [tabindex] {
+            caret-color: auto !important;
+            user-select: auto !important;
+            pointer-events: auto !important;
+            outline: auto !important;
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo text-center mb-4">
+            <img src="~/img/FP_GR.svg" alt="FitPass logo" class="img-fluid" style="width: 140px;" />
+        </div>
+
+        <nav class="nav flex-column px-2 flex-grow-1">
+            <a class="nav-link @(currentAction == "Dashbord" ? "active" : "")"
+               asp-controller="Admin" asp-action="Dashbord"><i class="bi bi-bar-chart-line"></i>後台首頁</a>
+            <a class="nav-link @(currentAction == "NewsList" ? "active" : "")"
+               asp-controller="Admin" asp-action="NewsList"><i class="bi bi-megaphone"></i>公告管理</a>
+            <a class="nav-link @(currentAction == "ClassList" ? "active" : "")"
+               asp-controller="Admin" asp-action="ClassList"><i class="bi bi-journal-text"></i>團體課程</a>
+            <a class="nav-link @(currentAction == "PrivateSessionOverview" ? "active" : "")"
+               asp-controller="Admin" asp-action="PrivateSessionOverview"><i class="bi bi-person-workspace"></i>私教課程</a>
+            <a class="nav-link @(currentAction == "CheckInStatusList" ? "active" : "")"
+               asp-controller="Admin" asp-action="CheckInStatusList"><i class="bi bi-calendar-check"></i>入場紀錄</a>
+            <a class="nav-link @(currentAction == "AccountOverview" ? "active" : "")"
+               asp-controller="Admin" asp-action="AccountOverview"><i class="bi bi-person-fill"></i>會員管理</a>
+            <a class="nav-link @(currentAction == "CoachMange" ? "active" : "")"
+               asp-controller="Admin" asp-action="CoachMange"><i class="bi bi-people-fill"></i>教練管理</a>
+            <a class="nav-link @(currentAction == "InbodyOverview" ? "active" : "")"
+               asp-controller="Admin" asp-action="InbodyOverview"><i class="bi bi-clipboard2-pulse"></i>Inbody</a>
+            <a class="nav-link @(currentAction == "SendEmail" ? "active" : "")"
+               asp-controller="Admin" asp-action="SendEmail"><i class="bi bi-envelope-at"></i> 寄送信件</a>
+            <a class="nav-link @(currentAction == "FeedbackList" ? "active" : "")"
+               asp-controller="Admin" asp-action="FeedbackList"><i class="bi bi-chat-left-text"></i> 意見回饋管理</a>
+        </nav>
+
+        <div class="user-box">
+            <img src="~/img/userimg.png" alt="@userName" />
+            <span style="font-size: 20px;">@userName</span>
+            <a href="javascript:void(0);" id="logoutBtn" title="登出">
+                <i class="bi bi-box-arrow-right fs-5 text-secondary"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="content-area">
+        <div class="main-container">
+            @RenderBody()
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/summernote/0.8.20/summernote.min.js"></script>
+    <script>
+        document.getElementById("logoutBtn").addEventListener("click", function () {
+            if (confirm("確定要登出嗎？")) {
+                window.location.href = "@Url.Action("Logout", "Account")";
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

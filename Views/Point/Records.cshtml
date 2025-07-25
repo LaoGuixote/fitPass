@@ -1,0 +1,104 @@
+﻿@model IEnumerable<fitPass.Models.PointLog>
+
+@{
+	ViewData["Title"] = "點數記錄";
+}
+
+<div class="row">
+	<div class="col-12 col-md-3 mb-3">
+		<div class="d-flex d-md-flex align-items-center">
+			<span class="text-nowrap me-2">開始日期:</span>
+			<input type="date" id="startDate" class="form-control" />
+		</div>
+	</div>
+
+	<div class="col-12 col-md-3 mb-3">
+		<div class="d-flex d-md-flex align-items-center">
+			<span class="text-nowrap me-2">結束日期:</span>
+			<input type="date" id="endDate" class="form-control" />
+		</div>
+	</div>
+
+	<div class="col-12 col-md-3 mb-3">
+		<input type="text" id="detailKeyword" class="form-control" placeholder="說明關鍵字" />
+	</div>
+
+	<div class="col-12 col-md-3 mb-3 d-grid d-md-block">
+		<button type="button" id="filterBtn" class="btn btn-success w-100">查詢</button>
+	</div>
+</div>
+<br />
+
+<table class="table">
+	<thead>
+		<tr>
+			<th>
+				異動時間
+			</th>
+			<th>
+				原始點數
+			</th>
+			<th>
+				最後點數
+			</th>
+			<th>
+				說明
+			</th>
+		</tr>
+	</thead>
+	<tbody id="pointLogTableBody">
+		<!-- 由 JS 動態產生 -->
+	</tbody>
+</table>
+
+<script>
+	// 將 Model 序列化為 JS 陣列
+	const originalData = @Html.Raw(Json.Serialize(Model));
+	const tableBody = document.getElementById('pointLogTableBody');
+	const startDateInput = document.getElementById('startDate');
+	const endDateInput = document.getElementById('endDate');
+	const detailKeywordInput = document.getElementById('detailKeyword');
+	const filterBtn = document.getElementById('filterBtn');
+
+	function renderTable(data) {
+		tableBody.innerHTML = '';
+		if (data.length === 0) {
+			tableBody.innerHTML = '<tr><td colspan="5">查無資料</td></tr>';
+			return;
+		}
+		data.forEach(item => {
+			tableBody.innerHTML += `
+				<tr>
+					<td>${item.alterationTime ? new Date(item.alterationTime).toLocaleDateString() : ''}</td>
+					<td>${item.originalPoint ?? ''}</td>
+					<td>${item.finallPoint ?? ''}</td>
+					<td>${item.detail ?? ''}</td>
+				</tr>
+			`;
+		});
+	}
+
+	function filterData() {
+		const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+		const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+		const keyword = detailKeywordInput.value.trim();
+
+		return originalData.filter(item => {
+			const date = item.alterationTime ? new Date(item.alterationTime) : null;
+			const matchDate =
+				(!startDate || (date && date >= startDate)) &&
+				(!endDate || (date && date <= endDate));
+			const matchKeyword =
+				!keyword || (item.detail && item.detail.includes(keyword));
+			return matchDate && matchKeyword;
+		});
+	}
+
+	filterBtn.addEventListener('click', () => {
+		const filtered = filterData();
+		renderTable(filtered);
+	});
+
+	// 頁面載入時顯示全部
+	renderTable(originalData);
+</script>

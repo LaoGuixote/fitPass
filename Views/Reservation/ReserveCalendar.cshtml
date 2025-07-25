@@ -1,0 +1,160 @@
+﻿@{
+    ViewData["Title"] = "教練預約";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+.fc-day-past {
+    background-color: #999999 !important;
+    color: #ffffff !important;
+    pointer-events: none;
+}
+
+.btn-cancel{
+    background-color: #6c757d;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border: none;
+    border-radius: 6px;
+}
+
+</style>
+
+<div class="mt-4">
+<h1 class="text-title-xl mb-3">目前預約教練：@Model.Account.Name</h1>
+<h2 class="text-title-md mb-1">選擇預約日期</h2>
+<br />
+<div id="calendar" class="container d-flex justify-content-center"></div>
+</div>
+
+<div id="reserveModal" class="modal" tabindex="-1" style="display:none;">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="reserveForm">
+                <div class="modal-header">
+                    <h5 class="text-title-xl">預約 <span id="modalDate"></span></h5>
+                </div>
+                <div class="modal-body" id="timeSlotOptions"></div>
+                <div class="modal-footer">
+                    <input type="hidden" name="timeId" id="timeId" />
+                    <button type="submit" class="btn-green">確認預約</button>
+                    <button type="button" class="btn-cancel" id="cancelReserve">取消</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="notifyModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-body">
+
+        <p id="notifyContent" style="text-align: center" class="text-title-md mt-4"></p>
+
+        <div class="text-center mt-4" >
+          <button type="button" class="btn-green text-title-md" data-bs-dismiss="modal" id="notifyCancel" style="letter-spacing: 0.2rem">確認</button>
+          <button type="button" class="btn-cancel text-title-md" data-bs-dismiss="modal" id="addPoint" style="margin-left: 1em; letter-spacing: 0.2rem;">儲值</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+            initialView: 'dayGridMonth',
+            locale: 'zh-tw',
+            events: {
+                url: '/Reservation/GetAvailableDates',
+                method: 'GET',
+                extraParams: {
+                    coachId: @ViewBag.CoachId
+                }
+            },
+            dayCellContent: function (arg) {
+                return arg.date.getDate();
+            },
+            dateClick: function (info) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const clicked = new Date(info.dateStr);
+
+                if (clicked < today) return;
+
+                $('#modalDate').text(info.dateStr);
+                $.get('/Reservation/GetAvailableTimeSlots', {
+                    coachId: @ViewBag.CoachId,
+                    date: info.dateStr
+                }, function (slots) {
+                    let html = '';
+                    if (slots.length === 0) {
+                        html = '<p>此日無可預約時段</p>';
+                    } else {
+                         html += '<p class="text-danger">本次預約將扣除 <strong>299</strong> 點數</p>';
+                        slots.forEach(s => {
+                            const label = `${s.timeSlot + 5}:00 ~ ${s.timeSlot + 6}:00`;
+                            html += `<div><input type="radio" name="timeId" value="${s.timeId}" id="slot${s.timeSlot}" />
+                                     <label for="slot${s.timeSlot}">${label}</label></div>`;
+                        });
+                    }
+                    $('#timeSlotOptions').html(html);
+                    setTimeout(()=>{
+                        $('#reserveModal').show();
+                    }, 300);
+                });
+            }
+        });
+
+        calendar.render();
+
+        $('#reserveForm').on('submit', function (e) {
+            e.preventDefault();
+
+            const $submitBtn = $(this).find('button[type="submit"]');
+            const timeId = $('input[name="timeId"]:checked').val();
+            if (!timeId) {
+                $('#addPoint').hide(); 
+                $("#notifyContent").text('請選擇一個時段或無時段可預約！');
+                $('#notifyModal').modal('show');
+                $('#reserveModal').hide();
+                return;
+            }
+
+            $.post('/Reservation/SubmitReservation', { timeId }, function (res) {
+                if(res.success){
+                    $('#addPoint').hide();
+                    $("#notifyContent").text('預約成功！');
+                    $('#notifyModal').modal('show');
+                    $('#reserveModal').hide();
+                    $('#notifyCancel').on('click', function () {
+                        $('#notifyModal').hide();
+                        location.href = '/CourseSchedules/MobileSchedule';
+                    });   
+                }
+                else{
+                    $("#notifyContent").text(res.message);
+                    $('#addPoint').show();
+                    $('#notifyModal').modal('show');
+                    $('#reserveModal').hide();
+                    $('#addPoint').on('click', function () {
+                        $('#notifyModal').hide();
+                        location.href = '/Point/Index';
+                    });   
+                }
+            })
+
+            .fail(function () {
+                alert('發生錯誤，請稍後再試');
+                $submitBtn.prop('disabled', false).text('確認預約'); 
+            });
+        });
+
+        $('#cancelReserve').on('click', function () {
+            $('#reserveModal').hide();
+        });
+    });
+</script>

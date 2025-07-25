@@ -1,0 +1,110 @@
+﻿@model List<fitPass.Models.ViewModels.CourseWithCountViewModel>
+
+@{
+    ViewData["Title"] = "團體課程清單";
+
+    string weekDay(int? day) => day switch
+    {
+        1 => "星期一",
+        2 => "星期二",
+        3 => "星期三",
+        4 => "星期四",
+        5 => "星期五",
+        6 => "星期六",
+        7 => "星期日",
+        _ => "資料異常請聯絡工程師"
+    };
+
+    string daytime(int? slot)
+    {
+        if (slot is >= 1 and <= 18)
+        {
+            int start = 6 + (slot.Value - 1);
+            return $"{start:00}:00 - {start + 1:00}:00";
+        }
+        return "資料異常請聯絡工程師";
+    }
+
+    string? keyword = ViewData["Keyword"]?.ToString();
+    string? selectedCoachId = ViewData["CoachId"]?.ToString();
+    string? selectedWeekday = ViewData["Weekday"]?.ToString();
+    string? selectedStatus = ViewData["Status"]?.ToString();
+}
+
+<div class="dashboard-box">
+    <h2 ><i class="bi bi-journal-text"></i> 團體課程清單</h2>
+
+    <!-- 🔍 查詢區塊 -->
+    <form method="get" class="row gy-2 gx-3 align-items-center mb-3">
+        <div class="col-auto">
+            <input type="text" name="keyword" class="form-control" placeholder="課程名稱關鍵字" value="@keyword" />
+        </div>
+
+        <div class="col-auto">
+            <select name="coachId" class="form-select">
+                <option value="">-- 所有教練 --</option>
+                @foreach (var item in ViewBag.CoachList as List<SelectListItem>)
+                {
+                    <option value="@item.Value" selected="@(item.Value == selectedCoachId ? "selected" : null)">@item.Text</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <select name="weekday" class="form-select">
+                <option value="">-- 星期幾 --</option>
+                @for (int i = 1; i <= 7; i++)
+                {
+                    var label = weekDay(i);
+                    <option value="@i" selected="@(i.ToString() == selectedWeekday ? "selected" : null)">@label</option>
+                }
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <select name="status" class="form-select">
+                <option value="">-- 所有狀態 --</option>
+                <option value="upcoming" selected="@(selectedStatus == "upcoming" ? "selected" : null)">未開始</option>
+                <option value="ongoing" selected="@(selectedStatus == "ongoing" ? "selected" : null)">進行中</option>
+                <option value="expired" selected="@(selectedStatus == "expired" ? "selected" : null)">已結束</option>
+            </select>
+        </div>
+
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">查詢</button>
+            <a href="@Url.Action("ClassList")" class="btn btn-outline-secondary">重置</a>
+        </div>
+    </form>
+
+    <!-- 📋 課程列表 -->
+    <table class="table table-bordered mt-3">
+        <thead class="table-dark">
+            <tr>
+                <th>課程名稱</th>
+                <th>教練姓名</th>
+                <th>時間</th>
+                <th>起訖日期</th>
+                <th>人數</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var course in Model)
+            {
+                <tr>
+                    <td>@course.Course.Title</td>
+                    <td>@course.Course.Coach?.Account?.Name</td>
+                    <td>@weekDay(course.Course.ClassTimeDayOfWeek) / @daytime(course.Course.ClassTimeDaily)</td>
+                    <td>@course.Course.ClassStartDate ~ @course.Course.ClassEndDate</td>
+                    <td>@course.ReservationCount / @course.Course.MaxStudent</td>
+                    <td>
+                        <a asp-action="ClassDetail" asp-route-id="@course.Course.CourseId" class="btn btn-sm btn-info">詳細</a>
+                        <a asp-action="EditClass" asp-route-id="@course.Course.CourseId" class="btn btn-sm btn-warning">編輯</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <a asp-action="CreateClass" class="btn btn-primary">➕ 新增課程</a>
+</div>

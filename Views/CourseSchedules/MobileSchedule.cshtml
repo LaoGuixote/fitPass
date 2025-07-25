@@ -1,0 +1,327 @@
+﻿@model List<fitPass.Models.CourseEventViewModel>
+
+
+
+@{
+    ViewData["Title"] = "課程排程";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/main.min.css" rel="stylesheet" />
+
+<!-- FullCalendar JS（要放在 script 前） -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<!-- FullCalendar 語系（選擇性） -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/locales-all.global.min.js"></script>
+
+<!-- 自訂上方月份與標籤 -->
+<div class="calendar-header">
+    <h2>               </h2>
+    <div class="legend">
+        <span class="dot oneonone"></span> 一對一課程
+        <span class="dot group"></span> 團體課程
+    </div>
+</div>
+
+<div id="calendar"></div>
+
+<div id="oneOnOneModal" class="modal-bg" style="display:none;">
+    <div class="modal-window">
+        <div id="oneOnOneInfo"></div>
+        <button onclick="closeOneOnOneModal()" class="modal-close-btn">確認</button>
+    </div>
+</div>
+
+<div id="groupCourseModal" class="modal-bg" style="display:none;">
+    <div class="modal-window">
+        <div id="groupCourseInfo"></div>
+        <button onclick="closeGroupCourseModal()" class="modal-close-btn">確認</button>
+    </div>
+</div>
+
+
+
+@Html.Raw(@"<style>
+
+
+    #calendar {
+        max-width: 100%;
+        margin: 10px auto;
+        padding: 0 0px;
+        overflow-x: auto;
+    }
+
+    .fc {
+        font-size: 0.85rem;
+    }
+.fc-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    margin: 0 auto;
+    background-color: currentColor;
+}
+
+    @media (max-width: 768px) {
+        .fc-toolbar-title {
+            font-size: 1.2rem;
+        }
+
+        .fc .fc-button {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .fc-daygrid-day-number {
+            font-size: 0.7rem;
+        }
+
+        .fc-event-title {
+            font-size: 0.7rem;
+        }
+    }
+
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0px 15px;
+    font-weight: bold;
+}
+
+.month-title {
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.legend {
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.dot.group {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    background: #26C56A; /* 這是漂亮的綠色，可依你需求調整 */
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+.dot.oneonone {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 7px;
+    background: orange;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+
+#calendar.fc-transition {
+    transition: transform 0.4s ease-in-out;
+}
+
+#calendar.slide-left {
+    transform: translateX(-100%);
+}
+
+#calendar.slide-right {
+    transform: translateX(100%);
+}
+
+.fc .fc-daygrid-day-frame {
+    min-height: 60px;   /* 或你想要的高度，如 80px、100px */
+
+}
+
+.modal-bg {
+    position: fixed; left: 0; top: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.22); display: flex; align-items: center; justify-content: center; z-index: 2000;
+}
+.modal-window {
+    background: #fff; border-radius: 12px; padding: 28px 20px 16px 20px; min-width: 180px; box-shadow: 0 6px 32px #0004; text-align: center;
+}
+.modal-close-btn {
+    background: #1abc60; color: #fff; border: none; border-radius: 7px; padding: 7px 38px; font-size: 1.12rem; font-weight: bold;
+}
+
+.fc-daygrid-day.fc-day-past,
+.fc-daygrid-day.fc-day-past .fc-daygrid-day-number {
+    background: #f2f2f2 !important;
+    color: #bbb !important;
+    opacity: 0.6 !important;
+    pointer-events: none !important;
+}
+
+/* 全站預設字體與大小 */
+body, .schedule-container, .calendar-header, .timeline, .week-row, .hour-row, .course-card, .legend, .weekday-label, .month-title {
+    font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+    /* 可依專案實際主題字體自行調整 */
+}
+
+/* 月份標題大一點 */
+.month-title {
+    font-size: 1.5rem !important;
+    font-weight: bold;
+}
+
+/* 星期幾的字體調整 */
+.weekday-label {
+    font-size: 1.15rem !important;
+    font-weight: 500;
+    color: #666 !important;
+}
+
+/* 日期按鈕字級（數字） */
+.day-button {
+    font-size: 1.12rem !important;
+    font-weight: 600;
+}
+
+/* 時間軸標籤 */
+.time-label {
+    font-size: 1.18rem !important;
+    font-weight: 600;
+    color: #666 !important;
+}
+
+/* 課程卡片字體 */
+.course-card {
+    font-size: 1.12rem !important;
+    font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
+    font-weight: bold;
+}
+
+/* 教練名稱字體再小一點但清楚 */
+.course-card span,
+.course-card div,
+.course-card .coach-name {
+    font-size: 0.98rem !important;
+    font-weight: 400;
+}
+
+/* legend字體調整 */
+.legend {
+    font-size: 1.08rem !important;
+}
+
+
+</style>")
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'zh-tw',
+    height: 'auto',
+    // 只留這一個
+    headerToolbar: {
+        left: 'title',
+        center: '',
+        right: 'today prev,next'
+    },
+    titleFormat: { year: 'numeric', month: 'long' },
+    dayCellContent: function(arg) {
+        return arg.date.getDate();
+    },
+
+dateClick: function(info) {
+    // 判斷這一天是不是過去
+    var today = new Date();
+    today.setHours(0,0,0,0);
+    var cellDate = new Date(info.date);
+    cellDate.setHours(0,0,0,0);
+    if (cellDate < today) {
+        // 已過去，不做任何事，直接 return！
+        return;
+    }
+    // 還沒過期，正常跳轉
+    const clickedDate = info.dateStr;
+    window.location.href = '/CourseSchedules/DailySchedule?date=' + clickedDate;
+},
+    events: '/CourseSchedules/GetAllCourseEvents',
+    eventContent: function (info) {
+        const type = info.event.extendedProps.type;
+        const color = type === "oneonone" ? "orange" : "green";
+
+        return {
+            html: `<div style="background:${color};height:12px;border-radius:5px;width:80%;margin:2px auto;"></div>`
+        };
+    },
+eventClick: function(info) {
+    var type = info.event.extendedProps.type;
+    var allCourses = info.event.extendedProps.allCourses || [];
+    if (type === "oneonone") {
+        if (!allCourses.length) return;
+        var html = `<div style="margin-bottom:14px;text-align:left;">`;
+        html += `<b>本日一對一預約 (${allCourses.length} 筆)：</b><br><br>`;
+        allCourses.forEach(function(c, idx) {
+            html += `<div style="margin-bottom:7px;">
+                <b>預約教練：</b>${c.coachName} 教練<br>
+                <b>預約時間：</b>${c.time}
+            </div>`;
+            if (idx !== allCourses.length - 1) html += `<hr style="margin:7px 0;">`;
+        });
+        html += `</div>`;
+        document.getElementById('oneOnOneInfo').innerHTML = html;
+        document.getElementById('oneOnOneModal').style.display = 'flex';
+        info.jsEvent.preventDefault();
+    } else if (type === "group") {
+        if (!allCourses.length) return;
+        var html = `<div style="margin-bottom:12px;text-align:left;">`;
+        html += `<b>本日團體課程 (${allCourses.length} 堂)：</b><br><br>`;
+        allCourses.forEach(function(c, idx) {
+            html += `<div style="margin-bottom:8px;">
+                <b style="color:#1abc60;font-size:1.02em;">${idx + 1}. ${c.title}</b><br>
+                <b>課程時間：</b>${c.time}<br>
+                <b>課程教練：</b>${c.coachName}<br>
+                <b>地點：</b>${c.location}
+            </div>`;
+            if (idx !== allCourses.length - 1) html += `<hr style="margin:7px 0;">`;
+        });
+        html += `</div>`;
+        document.getElementById('groupCourseInfo').innerHTML = html;
+        document.getElementById('groupCourseModal').style.display = 'flex';
+        info.jsEvent.preventDefault();
+    }
+},
+
+        // 加在這裡！（和 eventClick 並列）
+    dayCellDidMount: function(arg) {
+        var today = new Date();
+        today.setHours(0,0,0,0);
+        var cellDate = new Date(arg.date);
+        cellDate.setHours(0,0,0,0);
+        if (cellDate < today) {
+            arg.el.classList.add('fc-day-past');
+        }
+    }
+});
+
+        calendar.render();
+    });
+
+// 關閉 modal
+function closeOneOnOneModal() {
+    document.getElementById('oneOnOneModal').style.display = 'none';
+}
+
+function closeGroupCourseModal() {
+    document.getElementById('groupCourseModal').style.display = 'none';
+}
+
+
+</script>
+

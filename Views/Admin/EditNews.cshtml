@@ -1,0 +1,86 @@
+﻿@model News
+@{
+    ViewData["Title"] = "編輯公告";
+}
+
+
+
+<div class = "dashboard-box">
+<h2>✏️ 編輯公告</h2>
+
+<form asp-action="EditNews" method="post" enctype="multipart/form-data">
+    @Html.AntiForgeryToken()
+    <input type="hidden" asp-for="NewsId" />
+
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label">標題</label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Category" class="form-label">分類</label>
+        <select asp-for="Category" asp-items="@(ViewData["CategoryList"] as List<SelectListItem>)" class="form-select">
+            <option value="">-- 請選擇公告分類 --</option>
+        </select>
+        <span asp-validation-for="Category" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Level" class="form-label">重要等級</label>
+        <input asp-for="Level" class="form-control" />
+        <span asp-validation-for="Level" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Showtime" class="form-label">顯示日期</label>
+        <input asp-for="Showtime" type="datetime-local" class="form-control" />
+        <span asp-validation-for="Showtime" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="IsVisible" class="form-label">是否顯示</label>
+        <select asp-for="IsVisible" class="form-select">
+            <option value="true">顯示</option>
+            <option value="false">隱藏</option>
+        </select>
+        <span asp-validation-for="IsVisible" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Content" class="form-label">內容</label>
+        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+        <span asp-validation-for="Content" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">橫幅圖片（Banner）</label>
+        @if (Model.Banner != null)
+        {
+            <div class="mb-2">
+                <img src="data:image/png;base64,@Convert.ToBase64String(Model.Banner)" alt="Banner" class="img-fluid" style="max-height: 200px;" />
+            </div>
+        }
+        <input type="file" name="BannerFile" class="form-control" accept="image/*" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">內文圖片（Insideimg）</label>
+        @if (Model.Insideimg != null)
+        {
+            <div class="mb-2">
+                <img src="data:image/png;base64,@Convert.ToBase64String(Model.Insideimg)" alt="內文圖片" class="img-fluid" style="max-height: 200px;" />
+            </div>
+        }
+        <input type="file" name="InsideimgFile" class="form-control" accept="image/*" />
+    </div>
+
+    <button type="submit" class="btn btn-warning">儲存變更</button>
+    <a asp-action="NewsList" class="btn btn-secondary ms-2">取消</a>
+</form>
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+</div>

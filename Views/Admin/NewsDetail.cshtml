@@ -1,0 +1,78 @@
+﻿@model News
+@{
+    ViewData["Title"] = "公告詳情";
+}
+
+
+
+<div class="dashboard-box">
+<h2>📄 公告詳情</h2>
+
+<div class="card mt-4">
+    <div class="card-header bg-secondary text-white">
+        公告基本資訊
+    </div>
+    <div class="card-body">
+        <dl class="row">
+            <dt class="col-sm-3">標題</dt>
+            <dd class="col-sm-9">@Model.Title</dd>
+
+            <dt class="col-sm-3">分類</dt>
+            <dd class="col-sm-9">@Model.Category</dd>
+
+            <dt class="col-sm-3">發布時間</dt>
+            <dd class="col-sm-9">@Model.PublishTime?.ToString("yyyy/MM/dd HH:mm")</dd>
+
+            <dt class="col-sm-3">是否顯示</dt>
+            <dd class="col-sm-9">
+                @if (Model.IsVisible == true)
+                {
+                    <span class="text-success">顯示中</span>
+                }
+                else
+                {
+                    <span class="text-muted">已隱藏</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">等級</dt>
+            <dd class="col-sm-9">@Model.Level</dd>
+
+            <dt class="col-sm-3">顯示日期</dt>
+            <dd class="col-sm-9">@Model.Showtime?.ToString("yyyy - MM -dd  HH:mm")</dd>
+
+            <dt class="col-sm-3">內容</dt>
+            <dd class="col-sm-9">
+                <div style="white-space: pre-line;">@Model.Content</div>
+            </dd>
+
+            <dt class="col-sm-3">橫幅圖</dt>
+            <dd class="col-sm-9">
+                @if (Model.Banner != null)
+                {
+                    <img src="data:image;base64,@Convert.ToBase64String(Model.Banner)" alt="Banner" class="img-fluid" />
+                }
+                else
+                {
+                    <span class="text-muted">無圖片</span>
+                }
+            </dd>
+
+            <dt class="col-sm-3">內文圖片</dt>
+            <dd class="col-sm-9">
+                @if (Model.Insideimg != null)
+                {
+                    <img src="data:image;base64,@Convert.ToBase64String(Model.Insideimg)" alt="內文圖" class="img-fluid" />
+                }
+                else
+                {
+                    <span class="text-muted">無圖片</span>
+                }
+            </dd>
+        </dl>
+    </div>
+</div>
+
+<a class="btn btn-secondary mt-3" asp-action="NewsList">← 回公告列表</a>
+<a class="btn btn-warning mt-3" asp-action="EditNews" asp-route-id="@Model.NewsId">✏️ 編輯此公告</a>
+</div>

@@ -1,0 +1,58 @@
+﻿@model fitPass.Models.Account
+
+@{
+    ViewData["Title"] = "帳戶詳細資料";
+}
+
+
+
+<div class="dashboard-box">
+<h2>帳戶詳細資料</h2>
+
+<div class="card p-4" style="max-width: 600px;">
+    <div class="text-center mb-3">
+        @if (Model.ProfileImage != null)
+        {
+            <img src="data:image/png;base64,@Convert.ToBase64String(Model.ProfileImage)" class="img-thumbnail rounded-circle" style="width: 150px; height: 150px;" />
+        }
+        else
+        {
+            <div class="text-muted">無頭像</div>
+        }
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-4">姓名</dt>
+        <dd class="col-sm-8">@Model.Name</dd>
+
+        <dt class="col-sm-4">性別</dt>
+        <dd class="col-sm-8">
+            @(Model.Gender == 1 ? "男" : Model.Gender == 2 ? "女" : "其他/未填")
+        </dd>
+
+        <dt class="col-sm-4">Email</dt>
+        <dd class="col-sm-8">@Model.Email</dd>
+
+        <dt class="col-sm-4">電話</dt>
+        <dd class="col-sm-8">@Model.Phone</dd>
+
+        <dt class="col-sm-4">生日</dt>
+        <dd class="col-sm-8">@Model.Birthday?.ToString("yyyy-MM-dd")</dd>
+
+        <dt class="col-sm-4">加入日期</dt>
+        <dd class="col-sm-8">@Model.JoinDate?.ToString("yyyy-MM-dd")</dd>
+
+        <dt class="col-sm-4">帳戶狀態</dt>
+        <dd class="col-sm-8">@(Model.IsActive == true ? "啟用中" : "已停用")</dd>
+
+        <dt class="col-sm-4">會員到期日</dt>
+        <dd class="col-sm-8">@(((DateOnly?)ViewData["LatestSubDate"])?.ToString("yyyy-MM-dd") ?? "無資料or已過期")</dd>
+
+        <dt class="col-sm-4">剩餘點數</dt>
+        <dd class="col-sm-8">@Model.Point</dd>
+    </dl>
+</div>
+<div class="mt-4 text-end">
+    <a asp-action="AccountOverview" class="btn btn-secondary">返回帳戶總覽</a>
+	</div>
+</div>

@@ -1,0 +1,242 @@
+﻿@model Account
+
+@{
+	ViewData["Title"] = "點數儲值";
+	var latestRecord = (IEnumerable<PointLog>)ViewBag.record;
+}
+
+<head>
+	<link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+</head>
+
+<section id="plans" class="container">
+	<h2>
+		@Model.Name 您好!
+		<br />
+		您目前尚有 <span style="color:darkgreen">@Model.Point</span> 點!<br>
+	</h2>
+	<form method="post" id="form" class="p-4 border rounded shadow-sm bg-light mx-auto" style="max-width: 400px;">
+		<div class="mb-3">
+			<label for="pointInput" class="form-label">請輸入想要儲值點數</label>
+			<input type="number" class="form-control" id="pointInput" name="point" min="0" required>
+			<br />
+			<button id="button" class="btn btn-success w-100">儲值</button>
+		</div>
+	</form>
+
+	<br />
+	<h4>
+		最近十筆紀錄：
+	</h4>
+	<table class="table">
+		<thead>
+			<tr>
+				<th>
+					異動時間
+				</th>
+				<th>
+					原始點數
+				</th>
+				<th>
+					最後點數
+				</th>
+				<th>
+					說明
+				</th>
+				`
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var item in latestRecord)
+			{
+				<tr>
+					<td>
+						@Html.DisplayFor(modelItem => item.AlterationTime)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.OriginalPoint)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.FinallPoint)
+					</td>
+					<td>
+						@Html.DisplayFor(modelItem => item.Detail)
+					</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+
+	<div class="mt-4 text-center">
+		<a asp-action="Records" class="btn btn-success btn-lg">詳細記錄</a>
+	</div>
+
+	<div id="ECPayPayment" class="modal">
+
+		<!-- CSS -->
+		<link href="https://ecpg-stage.ecpay.com.tw/Content/css/frame.css" rel="stylesheet">
+		<link href="https://ecpg-stage.ecpay.com.tw/Content/css/style.css?v=20241029" rel="stylesheet">
+
+		<div class="ecpay-pay-list-wrap">
+			<span class="ecpay-JsType" style="display:none">pay</span>
+			<span class="ecpay-NoChoice" style="display:none">請選擇付款方式</span>
+			<span class="ecpay-ForeignCard" style="display:none">1</span>
+			<span class="ecpay-Redeem" style="display:none">0</span>
+			<span class="ecpay-MerchantTradeNo" style="display:none">20240516aaa1</span>
+			<span class="ecpay-Default-CardholderName" style="display:none"></span>
+
+			<ul class="ecpay-pay-list">
+				<li id="CreditCard" class="ecpay-pl-act">
+					<div class="ecpay-pl-intro">
+						<span class="ecpay-pl-radio"></span>
+						<div class="ecpay-pl-type">
+							信用卡付款 (一次付清)
+						</div>
+						<div class="ecpay-pl-icon-type">
+							<span class="ecpay-visa">VISA</span>
+							<span class="ecpay-master">master card</span>
+							<span class="ecpay-jcb">JCB</span>
+						</div>
+					</div>
+					<div class="ecpay-card-info-tab ecpay-pl-content">
+						<dl class="ecpay-select-input ecpay-cit-item ecpay-col-a-100">
+							<dt class="">
+								<span class="ecpay-icon-ic_credit ecpay-cit-ic"></span>
+								<span class="ecpay-cit-title">信用卡號</span>
+							</dt>
+							<dd style="display: none;">
+								<label class="ecpay-select-tab">
+									<select class="ecpay-CardList" data-val="true" data-val-number="欄位 信用卡號 必須是數字。"
+											data-val-required="信用卡號 欄位是必要項。" id="CardID" name="CardID">
+										<option value="0" selected="selected">我要輸入其他卡號</option>
+									</select>
+								</label>
+							</dd>
+							<dd>
+								<input class="ecpay-cc-card" id="CardNo" maxlength="19" name="CardNo"
+									   placeholder="0000 0000 0000 0000" type="tel" value="" required>
+								<div class="ecpay-card-status-line">
+									<span class="ecpay-red" style="visibility: hidden;">請輸入卡號</span>
+									<span class="ecpay-card-detail"><i></i></span>
+								</div>
+								<span class="ecpay-CardNoAcceptMsg" style="display:none">本公司不接受非台灣發行之信用卡交易</span>
+								<span class="ecpay-CardNoSupportMsg" style="display:none">此卡不支援</span>
+								<span class="ecpay-CardInputCardNoIncorrectMsg" style="display:none">卡號格式錯誤，請重新輸入</span>
+								<span class="ecpay-CardInputCardNoMsg" style="display:none">請輸入卡號</span>
+							</dd>
+						</dl>
+						<div class="ecpay-cit-item-box">
+							<dl class="ecpay-select-input ecpay-cit-item">
+								<dt>
+									<span class="ecpay-icon-ic_daterange ecpay-cit-ic"></span>
+									<span class="ecpay-cit-title">有效期限</span>
+								</dt>
+								<dd>
+									<input class="ecpay-date" id="CardValid" maxlength="7" name="CardValid"
+										   placeholder="MM / YY" type="tel" value="" required>
+									<div class="ecpay-card-status-line">
+										<span class="ecpay-red" style="display:none">有效期限錯誤，請重新輸入</span>
+									</div>
+									<span class="ecpay-CardInputExpDateIncorrectMsg"
+										  style="display:none">有效期限錯誤，請重新輸入</span>
+									<span class="ecpay-CardInputExpDateMsg" style="display:none">請輸入有效期限</span>
+								</dd>
+							</dl>
+							<dl class="ecpay-select-input ecpay-cit-item">
+								<dt>
+									<span class="ecpay-icon-ic_lock ecpay-cit-ic"></span>
+									<span class="ecpay-cit-title">安全碼</span>
+								</dt>
+								<dd>
+									<input name="CardCV_V2" class="ecpay-cc-cvc" id="CardCV_V2" maxlength="3"
+										   pattern="^\d{3}$" placeholder="000" type="tel" value="" required>
+									<div class="ecpay-card-status-line">
+										<span class="ecpay-red" style="display:none">請輸入安全碼</span>
+									</div>
+									<span class="ecpay-CardInputCSC_4digit" style="display:none">請輸入4位安全碼</span>
+									<span class="ecpay-CardInputCSCIncorrectMsg"
+										  style="display:none">安全碼格式錯誤，請重新輸入</span>
+									<span class="ecpay-CardInputCSCMsg" style="display:none">請輸入安全碼</span>
+								</dd>
+							</dl>
+
+						</div>
+						@* <dl class="ecpay-select-input ecpay-cit-item ecpay-col-a-100">
+								<dt class="ecpay-flex">
+									<div class="ecpay-cit-ic2 ecpay-eci-member"></div>
+									<span class="ecpay-cit-title">持卡人姓名</span>
+								</dt>
+								<dd>
+									<input value="" class="ecpay-cardholderName" id="CardholderName" maxlength="50"
+										   name="CardholderName" placeholder="請輸入卡片上的英文姓名" type="text" required>
+
+									<div class="ecpay-card-status-line">
+										<span class="ecpay-red" style="display:none">請輸入卡片上的英文姓名</span>
+									</div>
+									<span class="ecpay-CardInputNameIncorrectMsg" style="display:none">
+										請輸入2個以上的英文字母或符號（/ - '
+										,）
+									</span>
+									<span class="ecpay-CardInputNameMsg" style="display:none">請輸入卡片上的英文姓名</span>
+								</dd>
+							</dl> *@
+					</div>
+				</li>
+			</ul>
+			<div class="ecpay-btn-box">
+				<button id="submit" class="ecpay-btn ecpay-btn-primary" style="background-color:forestgreen">確認付款</button>
+				<button id="cancel" class="ecpay-btn ecpay-btn-secondary">取消</button>
+			</div>
+		</div>
+
+		<script src="https://ecpg-stage.ecpay.com.tw/Scripts/Payment/actions.js?v=2507231017"></script>
+
+		<script>
+			var appleOnly = '0';
+
+			$(function () {
+				var script = document.createElement('script');
+				script.type = 'text/javascript';
+				script.src = 'https://ecpg-stage.ecpay.com.tw/Scripts/Payment/actions.pay.min.js?v=2507231017';
+				$('head')[0].appendChild(script);
+				script.addEventListener('load', function () {
+					Pay.Init("https://ecpg-stage.ecpay.com.tw");
+				});
+				var scriptA = document.createElement('script');
+				scriptA.type = 'text/javascript';
+				scriptA.src = 'https://ecpg-stage.ecpay.com.tw/Scripts/Payment/actions.applepay.min.js?v=2507231017';
+				$('head')[0].appendChild(scriptA);
+				scriptA.addEventListener('load', function () {
+					ECApplePay.Init("", "", "100", "");
+				});
+			})
+
+		</script>
+
+	</div>
+</section>
+<script>
+	document.getElementById("button").addEventListener('click', (e) =>
+	{
+		e.preventDefault();
+		if(document.getElementById("pointInput").value > 0){
+			document.getElementById("ECPayPayment").style.display = "flex";
+			document.querySelector(".ecpay-pay-list-wrap").style.width = "auto";
+		}
+	});
+
+	document.getElementById("submit").addEventListener('click', (e) =>
+	{
+		if(Pay.ChkPayData()){
+			alert("付款成功!");
+			document.forms["form"].submit();
+		}
+	});
+
+	document.getElementById("cancel").addEventListener('click', () =>
+	{
+		document.getElementById("ECPayPayment").style.display = "none";
+
+	});
+</script>
+

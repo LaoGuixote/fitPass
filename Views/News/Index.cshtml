@@ -1,0 +1,35 @@
+﻿@model List<fitPass.Models.News>
+@{
+    ViewData["Title"] = "最新消息";
+}
+
+    @foreach (var n in Model)
+    {
+        <a href="/News/Detail/@n.NewsId" class="fitpass-card mb-3 d-block text-decoration-none text-dark d-flex">
+            @if (n.Banner != null)
+            {
+                var bannerBase64 = "data:image/png;base64," + Convert.ToBase64String(n.Banner);
+                <img src="@bannerBase64" width="128" height="90" class="me-3 rounded" />
+            }
+            <div>
+                <div class="text-info-sm">
+                    @(n.Showtime?.ToString("yyyy/MM/dd") ?? n.PublishTime?.ToString("yyyy/MM/dd"))
+                </div>
+                <div class="text-title-md fw-bold mt-1">@n.Title</div>
+                <div class="text-info-sm">課程詳情 →</div>
+            </div>
+        </a>
+
+    }
+
+    <div class="text-center mt-3">
+        @if ((int)ViewBag.CurrentPage > 1)
+        {
+            <a class="btn btn-outline-dark me-2" href="?page=@((int)ViewBag.CurrentPage - 1)">◀</a>
+        }
+        @if ((int)ViewBag.CurrentPage < (int)ViewBag.TotalPages)
+        {
+            <a class="btn btn-outline-dark" href="?page=@((int)ViewBag.CurrentPage + 1)">▶</a>
+        }
+    </div>
+@* </div> *@

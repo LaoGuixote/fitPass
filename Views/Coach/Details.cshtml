@@ -1,0 +1,50 @@
+﻿@{
+    ViewData["Title"] = "報名課程學員清單";
+    var students = ViewBag.Students as List<fitPass.Models.Account>;
+    string courseTitle = ViewBag.CourseTitle as string;
+}
+
+<div class="container mt-4" style="max-width:420px;">
+    <div class="text-center mb-3" style="font-weight:bold;font-size:1.18rem;">
+        報名課程學員清單 - @courseTitle
+    </div>
+    <div class="card p-3">
+<ul class="list-group list-group-flush">
+    @if (students != null && students.Count > 0)
+    {
+        int idx = 1;
+        foreach (var s in students)
+        {
+            <li class="list-group-item d-flex align-items-center" style="font-size:1.1rem;">
+                <span style="font-size:1.13em;font-weight:bold;width:2em;display:inline-block;">@idx.</span>
+                @if (s.ProfileImage != null)
+                {
+                    <img src="data:image/jpeg;base64,@Convert.ToBase64String(s.ProfileImage)" alt="頭像"
+                         style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;border:2px solid #eee;">
+                }
+                else
+                {
+                    <img src="/img/menu_profile.svg" alt="預設頭像"
+                         style="width:40px;height:40px;border-radius:50%;object-fit:cover;margin-right:14px;border:2px solid #eee;">
+                }
+                <span>@s.Name</span>
+            </li>
+            idx++;
+        }
+    }
+    else
+    {
+        <li class="list-group-item text-danger">目前尚無學生報名！</li>
+    }
+</ul>
+    </div>
+    <div class="text-center mt-3">
+        <button type="button" class="btn btn-outline-primary" onclick="goBackToSchedule()">返回課表</button>
+    </div>
+</div>
+
+<script>
+function goBackToSchedule() {
+    window.history.back();
+}
+</script>
