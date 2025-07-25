@@ -1,49 +1,122 @@
-﻿@model fitPass.ViewModels.CoachTypeOverviewViewModel
+﻿@model List<fitPass.ViewModels.CoachOverviewViewModel>
 @{
     ViewData["Title"] = "教練師資";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var coachType = Context.Request.Query["coachType"].ToString();
+    var coachName = Context.Request.Query["coachName"].ToString();
+    var coachSpecialty = Context.Request.Query["coachSpecialty"].ToString();
+
+    var specialties = ViewBag.Specialties as List<string> ?? new List<string>();
 }
 
-<div class="page-wrapper">
+<style>
+    .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        font-size: 14px;
+        font-weight: 500;
+        padding: 10px 16px;
+        border: none;
+        border-radius: 6px;
+    }
+</style>
 
-    <h5 class="text-title-md mb-3" style="font-size: 1.2rem">可預約教練</h5>
-    <div class="row">
-        @foreach (var coach in Model.PrivateCoach)
-        {
-                <div class="col-6 col-md-4 mb-4">
-                    <div class="fitpass-card h-100 d-flex flex-column">
-                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId">
-                            <img src="@(coach.CoachPhoto ?? "/images/default-coach.png")"
-                                 class="img-fluid rounded "
-                                 style="height: 170px; width: 100%; object-fit: contain;" />
-                        </a>
-                        <div class="text-title-md " style="letter-spacing: 0.2rem">@coach.Name</div>
-                        <div class="text-info-sm text-muted mb-1">@coach.Specialty</div>
-                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId" class="btn-green mt-auto w-100" style="text-align: center">查看詳情</a>
-                    </div>
-                </div>
-        }
+<div class="d-flex justify-content-start align-items-center mb-1">
+    <div class="me-2">
+        <select id="coachType" class="form-select">
+            @if (string.IsNullOrEmpty(coachType) || coachType == "1")
+            {
+        <option value="1" selected>私人</option>
+            }
+            else
+            {
+        <option value="1">私人</option>
+            }
+
+            @if (coachType == "2")
+            {
+        <option value="2" selected>團課</option>
+            }
+            else
+            {
+        <option value="2">團課</option>
+            }
+        </select>
     </div>
 
-    <hr />
-
-    <h5 class="text-title-md mb-3" style="font-size: 1.2rem">團體課教練</h5>
-    <div class="row">
-        @foreach (var coach in Model.GroupCoach)
-        {
-                <div class="col-6 col-md-4 mb-4">
-                    <div class="fitpass-card h-100 d-flex flex-column">
-                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId">
-                            <img src="@(coach.CoachPhoto ?? "/images/default-coach.png")"
-                                 class="img-fluid rounded "
-                                 style="height: 220px; width: 100%; object-fit: cover;" />
-                        </a>
-                        <div class="text-title-md " style="letter-spacing: 0.2rem">@coach.Name</div>
-                        <div class="text-info-sm text-muted mb-1">@coach.Specialty</div>
-                        <a asp-action="CoachDetail" asp-route-id="@coach.CoachId" class="btn-green mt-auto w-100" style="text-align: center">查看詳情</a>
-                    </div>
-                </div>
-        }
+    <div class="col-md-3">
+        <select id="coachSpecialty" class="form-select">
+            <option value="">-- 專長篩選 --</option>
+            @foreach (var s in specialties)
+            {
+                if (coachSpecialty == s)
+                {
+                <option value="@s" selected>@s</option>
+                }
+                else
+                {
+                <option value="@s">@s</option>
+                }
+            }
+        </select>
     </div>
 
 </div>
+
+<div class="d-flex align-items-center justify-content-between mb-3">
+        <input type="text" id="coachName" class="form-control me-2" style="flex: 1;" value="@coachName" placeholder="搜尋教練名字" />
+
+        <button id="clearBtn" class="btn-cancel">清除</button>
+</div>
+
+<div class="row">
+    @foreach (var coach in Model)
+    {
+        <div class="col-6 col-md-4 mb-3">
+            <div class="fitpass-card h-100 d-flex flex-column">
+                <a asp-action="CoachDetail" asp-route-id="@coach.CoachId">
+                    <img src="@(coach.CoachPhoto ?? "/images/default-coach.png")"
+                         class="img-fluid rounded"
+                         style="height: 170px; width: 100%; object-fit: contain;" />
+                </a>
+                <div class="text-title-md" style="letter-spacing: 0.2rem">@coach.Name</div>
+                <div class="text-info-sm text-muted mb-1">@coach.Specialty</div>
+                <a asp-action="CoachDetail" asp-route-id="@coach.CoachId" class="btn-green mt-auto w-100" style="text-align: center">查看詳情</a>
+            </div>
+        </div>
+    }
+</div>
+
+
+<script>
+    function updateUrlAndSearch() {
+        const type = document.getElementById("coachType").value;
+        const specialty = document.getElementById("coachSpecialty").value;
+        const name = document.getElementById("coachName").value;
+
+        const url = new URL(window.location.href.split('?')[0]);
+
+
+        if (type) url.searchParams.set("coachType", type);
+        else url.searchParams.delete("coachType")
+        if (specialty) url.searchParams.set("coachSpecialty", specialty);
+        else url.searchParams.delete("coachSpecialty")
+        if (name) url.searchParams.set("coachName", name);
+        else url.searchParams.delete("coachName")
+
+        window.location.href = url.toString();
+    }
+
+    document.getElementById("coachType").addEventListener("change", updateUrlAndSearch);
+    document.getElementById("coachSpecialty").addEventListener("change", updateUrlAndSearch);
+    document.getElementById("coachName").addEventListener("keydown", function(e){
+        if(e.key == "Enter"){
+            updateUrlAndSearch();
+        }
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", function () {
+        location.href = "/Coach/CoachOverview";
+    });
+</script>

@@ -50,10 +50,31 @@ namespace fitPass.Controllers
             return View(vm);  // 對應 Views/Coach/Index.cshtml
         }
         //教練總覽
-        public async Task<IActionResult> CoachOverview()
+        public async Task<IActionResult> CoachOverview(string coachSpecialty, string coachName, int coachType = 1)
         {
-            var coachData = await _context.Coaches
+            var privateCoachQuery = _context.Coaches
                 .Include(c => c.Account)
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(coachName))
+            {
+                privateCoachQuery = privateCoachQuery
+                    .Where(c => c.Account.Name.Contains(coachName));
+            }
+
+            if (coachType == 1 || coachType == 2)
+            {
+                privateCoachQuery = privateCoachQuery
+                    .Where(c => c.CoachType == coachType);
+            }
+
+            if (!string.IsNullOrEmpty(coachSpecialty))
+            {
+                privateCoachQuery = privateCoachQuery
+                    .Where(c => c.Specialty.Contains(coachSpecialty));
+            }
+
+            var coachData = await privateCoachQuery
                 .Select(c => new CoachOverviewViewModel
                 {
                     CoachId = c.CoachId,
@@ -64,13 +85,12 @@ namespace fitPass.Controllers
                 })
                 .ToListAsync();
 
-            var coachType = new CoachTypeOverviewViewModel
-            {
-                PrivateCoach = coachData.Where(ct => ct.CoachType == 1).ToList(),
-                GroupCoach = coachData.Where(ct => ct.CoachType == 2 ).ToList()
-            };
+            ViewBag.Specialties = await _context.Coaches
+                .Select(c => c.Specialty)
+                .Distinct()
+                .ToListAsync();
 
-            return View(coachType);
+            return View(coachData);
         }
 
         //教練個人詳細頁面
