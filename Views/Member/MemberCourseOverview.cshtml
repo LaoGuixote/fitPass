@@ -156,8 +156,8 @@
         @foreach (var s in Model.PrivateCourses)
         {
                     <tr>
-                        <td class="text-center align-middle">@s.CoachName</td>
-                        <td class="text-center align-middle">@FormatDate(s.Date)</td>
+                        <td class="align-middle">@s.CoachName</td>
+                        <td class="align-middle">@FormatDate(s.Date)</td>
                         <td class="d-flex align-items-center justify-content-between">
                     @TimeSlotToString(s.TimeSlot)
 
