@@ -69,7 +69,7 @@
 		data.forEach(item => {
 			tableBody.innerHTML += `
 				<tr>
-					<td>${item.alterationTime ? new Date(item.alterationTime).toLocaleDateString() : ''}</td>
+					<td>${item.alterationTime ? new Date(item.alterationTime).toLocaleString() : ''}</td>
 					<td>${item.originalPoint ?? ''}</td>
 					<td>${item.finallPoint ?? ''}</td>
 					<td>${item.detail ?? ''}</td>
