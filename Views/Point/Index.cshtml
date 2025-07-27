@@ -220,6 +220,7 @@
 	{
 		e.preventDefault();
 		if(document.getElementById("pointInput").value > 0){
+			document.getElementById("ECPayPayment").style.zIndex = 9999;
 			document.getElementById("ECPayPayment").style.display = "flex";
 			document.querySelector(".ecpay-pay-list-wrap").style.width = "auto";
 		}
