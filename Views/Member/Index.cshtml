@@ -170,8 +170,8 @@ else
 	</a>
 </div>
 <div class="d-flex gap-3 pb-3 mb-4 news-scroll-container">
-@if (Model.Member.Phone != "")
-{
+	@if (Model.Member.Phone != "")
+	{
 		@foreach (var n in recommand)
 		{
 			if (Model.Member.Phone.Contains(n.Location))
@@ -199,22 +199,22 @@ else
 				</a>
 			}
 		}
-}
-else
-{
-	@Html.Raw("請先至會員資料填寫興趣!");
-}
+	}
+	else
+	{
+		@Html.Raw("請先至會員資料填寫興趣!")
+		;
+	}
 </div>
-
-
-
 @* </div> *@
 
 <!-- 🧷 固定底部入場按鈕 -->
 <div class="qrcode-fixed-bar d-grid">
 	@if (Model.HasValidSubscription)
 	{
-		<button class="btn btn-green py-3" data-bs-toggle="modal" data-bs-target="#qrcodeModal">
+		<button class="btn btn-green py-3"
+				data-bs-toggle="modal" data-bs-target="#qrcodeModal"
+				onclick="openQRCodeModal()">
 			入場 QRCode
 		</button>
 	}
@@ -231,16 +231,26 @@ else
 <div class="modal fade" id="qrcodeModal" tabindex="-1" aria-labelledby="qrcodeLabel" aria-hidden="true">
 	<div class="modal-dialog modal-dialog-centered">
 		<div class="modal-content text-center">
-			<div class="modal-header border-0">
+			<div class="modal-header border-0 flex-column align-items-start">
 				<h5 class="modal-title w-100 text-title-md">@Model.Member.Name 的入場碼</h5>
-				<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+				<p id="modalEntryStatus" class="text-muted small mt-2 mb-0 text-center w-100">
+					目前狀態：<span class="text-secondary">等待掃描中...</span>
+				</p>
+
+
+
+				<button type="button" class="btn-close position-absolute end-0 top-0 me-2 mt-2" data-bs-dismiss="modal"></button>
 			</div>
 			<div class="modal-body">
 				<div class="d-flex justify-content-center align-items-center flex-column">
-					<div id="qrcode"></div>
+					<div id="qrcodeWrapper" class="position-relative" style="width: 180px; height: 180px;">
+						<div id="qrcode"></div>
+					</div>
+
 					<p class="text-info-sm mt-3">剩餘時間 <span id="countdown">30</span> 秒</p>
-					<button class="btn btn-outline-success mt-2" onclick="generateQRCode()">重新整理</button>
+					<button class="btn btn-outline-success mt-2" onclick="refreshQRCode()">重新整理</button>
 				</div>
+
 			</div>
 		</div>
 	</div>
@@ -250,45 +260,9 @@ else
 <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 <script>
 	const memberId = '@Context.Session.GetInt32("MemberId")';
-	var qrcode;
-	var countdown = 30;
-	var countdownInterval;
-
-	function generateQRCode() {
-		const timestamp = Date.now();
-		const qrText = btoa(`${memberId}|${timestamp}`);
-
-		if (qrcode) {
-			qrcode.clear();
-		} else {
-			qrcode = new QRCode(document.getElementById("qrcode"), {
-				width: 180,
-				height: 180
-			});
-		}
-		qrcode.makeCode(qrText);
-		resetCountdown();
-
-		fetch('/Member/CheckInOut', {
-			method: 'POST',
-			headers: {
-				'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
-			}
-		}).then(res => res.json())
-		.then(data => {
-			if (data.success) {
-				document.getElementById("peopleNowDisplay").innerText = `目前場館人流：${data.peopleNow} / 60`;
-				const statusEl = document.getElementById("entryStatusDisplay");
-				if (data.currentStatus === "已入場") {
-					statusEl.innerHTML = '目前狀態：<span class="text-success">已入場</span>';
-				} else {
-					statusEl.innerHTML = '目前狀態：<span class="text-danger">已退場</span>';
-				}
-			} else {
-				alert("打卡失敗");
-			}
-		});
-	}
+	let qrcode;
+	let countdown = 30;
+	let countdownInterval;
 
 	function resetCountdown() {
 		countdown = 30;
@@ -301,8 +275,84 @@ else
 		}, 1000);
 	}
 
-	const modal = document.getElementById("qrcodeModal");
-	modal.addEventListener('shown.bs.modal', generateQRCode);
-</script>
+	function generateQRCodeOnly() {
+		const timestamp = Date.now();
+		const qrText = btoa(`${memberId}|${timestamp}`);
 
+		if (!qrcode) {
+			qrcode = new QRCode(document.getElementById("qrcode"), {
+				width: 180,
+				height: 180
+			});
+		} else {
+			qrcode.clear();
+		}
+
+		qrcode.makeCode(qrText);
+		resetCountdown();
+
+		// 初始狀態文字：Modal + 首頁同步顯示「等待掃描中...」
+		const modalStatus = document.getElementById("modalEntryStatus");
+		const homeStatus = document.getElementById("entryStatusDisplay");
+
+		if (modalStatus) {
+			modalStatus.innerHTML = '目前狀態：<span class="text-secondary">等待掃描中...</span>';
+		}
+		if (homeStatus) {
+			homeStatus.innerHTML = '目前狀態：<span class="text-secondary">等待掃描中...</span>';
+		}
+	}
+
+	function checkStatusAfterDelay() {
+		fetch('/Member/CheckInOut', {
+			method: 'POST',
+			headers: {
+				'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+			}
+		})
+		.then(res => res.json())
+		.then(data => {
+			const modalStatus = document.getElementById("modalEntryStatus");
+			const homeStatus = document.getElementById("entryStatusDisplay");
+			const peopleNowDisplay = document.getElementById("peopleNowDisplay");
+
+			if (data.success) {
+				const newStatus =
+					data.currentStatus === "已入場"
+						? '<span class="text-success">入場中</span>'
+						: '<span class="text-danger">未入場</span>';
+
+				if (modalStatus) {
+					modalStatus.innerHTML = `目前狀態：${newStatus}`;
+				}
+
+				if (homeStatus) {
+					homeStatus.innerHTML = `目前狀態：${newStatus}`;
+				}
+
+				if (peopleNowDisplay) {
+					peopleNowDisplay.innerText = `目前場館人流：${data.peopleNow} / 60`;
+				}
+			} else {
+				if (modalStatus) {
+					modalStatus.innerHTML = '<span class="text-danger">打卡失敗</span>';
+				}
+				if (homeStatus) {
+					homeStatus.innerHTML = '<span class="text-danger">打卡失敗</span>';
+				}
+			}
+		});
+	}
+
+	function openQRCodeModal() {
+		generateQRCodeOnly();
+		setTimeout(() => {
+			checkStatusAfterDelay();
+		}, 2000);
+	}
+
+	function refreshQRCode() {
+		openQRCodeModal();
+	}
+</script>
 
