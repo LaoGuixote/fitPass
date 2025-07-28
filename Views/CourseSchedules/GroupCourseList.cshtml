@@ -6,7 +6,7 @@
 @model List<fitPass.Models.GroupCourseVM>
 
 @{
-    // 取得篩選參數
+    // 取得篩選參數 213
     var hasQuery = Context.Request.QueryString.HasValue;
     var currentCoachId = Context.Request.Query["coachId"].ToString();
     var currentAvailableFilter = Context.Request.Query["availableFilter"].ToString();
@@ -62,33 +62,40 @@
         </form>
     </div>
 
-    <!-- 報名狀況 -->
-    <div class="signup-filter">
-        <form method="get" style="display:inline;">
-            <select name="signUpFilter" onchange="this.form.submit()" class="form-select">
-                <option value="">報名狀況</option>
-                @if (currentSignUpFilter == "registered")
-                {
-                    <option value="registered" selected>已報名</option>
-                }
-                else
-                {
-                    <option value="registered">已報名</option>
-                }
-                @if (currentSignUpFilter == "notRegistered")
-                {
-                    <option value="notRegistered" selected>未報名</option>
-                }
-                else
-                {
-                    <option value="notRegistered">未報名</option>
-                }
-            </select>
-            <input type="hidden" name="coachId" value="@currentCoachId" />
-            <input type="hidden" name="availableFilter" value="@currentAvailableFilter" />
-        </form>
-    </div>
+<!-- 課程類型 -->
+<div class="location-filter">
+    <form method="get" id="locationForm" style="display:inline;">
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="locations" value="拳擊"
+                   @(Context.Request.Query["locations"].Contains("拳擊") ? "checked" : "")
+                   onchange="document.getElementById('locationForm').submit();">
+            <label class="form-check-label">拳擊</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="locations" value="體適能"
+                   @(Context.Request.Query["locations"].Contains("體適能") ? "checked" : "")
+                   onchange="document.getElementById('locationForm').submit();">
+            <label class="form-check-label">體適能</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="locations" value="瑜珈"
+                   @(Context.Request.Query["locations"].Contains("瑜珈") ? "checked" : "")
+                   onchange="document.getElementById('locationForm').submit();">
+            <label class="form-check-label">瑜珈</label>
+        </div>
+        <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="locations" value="重訓"
+                   @(Context.Request.Query["locations"].Contains("重訓") ? "checked" : "")
+                   onchange="document.getElementById('locationForm').submit();">
+            <label class="form-check-label">重訓</label>
+        </div>
+
+        <!-- 保留其他條件 -->
+        <input type="hidden" name="coachId" value="@currentCoachId" />
+        <input type="hidden" name="availableFilter" value="@currentAvailableFilter" />
+    </form>
 </div>
+
 
 @if (!hasQuery)
 {
@@ -132,45 +139,78 @@ body, html {
     margin: 0;
     padding: 0;
 }
+
+/* 篩選區主容器：讓下拉選單並排 */
 .filter-bar {
     display: flex;
-    gap: 1.1rem 0.5vw;
     flex-wrap: wrap;
-    align-items: flex-end;
-    margin: 4px 0 4px 0;
+    align-items: center;
+    gap: 12px;
+    margin: 4px 0 12px 0;
 }
-.filter-bar > div {
+
+/* 各篩選項（教練 / 課程）設定寬度與排列 */
+.coach-filter,
+.available-filter {
     flex: 0 1 auto;
-    min-width: 140px;
-    margin-right: 10px;
+    min-width: 120px;
 }
+
+/* 類型篩選 */
+.location-filter {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* 下拉選單基本樣式 */
+.coach-filter select,
+.available-filter select {
+    width: auto;
+    min-width: 120px;
+    max-width: 100%;
+}
+
 .form-select {
-    width: 100%;
     font-size: 1.09rem;
     font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif !important;
     color: #222;
 }
+
+/* 類型 checkbox 間距 */
+.location-filter .form-check {
+    margin-bottom: 4px;
+}
+
+/* ✅ 手機版維持並排，不做直向堆疊 */
 @media (max-width: 600px) {
     .filter-bar {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 12px !important;
+        flex-wrap: wrap;
+        gap: 10px;
     }
-    .filter-bar > div, .filter-bar form {
-        width: 100% !important;
-        margin: 0 !important;
+
+    .coach-filter,
+    .available-filter {
+        flex: 1 1 auto;
+        min-width: 120px;
     }
-    .form-select {
+
+    .coach-filter select,
+    .available-filter select {
         width: 100%;
     }
 }
+
+/* 課程列表樣式 */
 .course-list-content {
     display: flex;
     flex-wrap: wrap;
     gap: 1.1rem 2vw;
     padding: 24px 2vw 32px 2vw;
-    justify-content: center;
+    justify-content: flex-start;
 }
+
 .course-card-list {
     background: #fff;
     border-radius: 15px;
@@ -187,9 +227,11 @@ body, html {
     font-size: 1.06rem;
     font-family: 'Noto Sans TC', 'Segoe UI', 'Microsoft JhengHei', Arial, sans-serif;
 }
+
 .course-card-list:hover {
     box-shadow: 0 2px 16px #0002;
 }
+
 .course-img img {
     width: 100%;
     height: 150px;
@@ -198,6 +240,7 @@ body, html {
     background: #eee;
     display: block;
 }
+
 .course-title {
     font-size: 1.18rem;
     font-weight: bold;
@@ -205,6 +248,7 @@ body, html {
     margin-bottom: 0.18rem;
     color: #222;
 }
+
 .course-coach {
     font-size: 1.06rem;
     color: #888;

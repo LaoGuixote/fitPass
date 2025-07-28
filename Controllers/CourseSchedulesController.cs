@@ -17,17 +17,13 @@ namespace fitPass.Controllers
 
 
         // 新增這兩個 Action
-        public async Task<IActionResult> GroupCourseList(int? coachId, string signUpFilter, string availableFilter)
+        public async Task<IActionResult> GroupCourseList(int? coachId, string availableFilter, [FromQuery] List<string> locations)
         {
-            // 直接抓所有課程（不篩選）
-            var groupCourses = await _context.CourseSchedules.ToListAsync();
             var coaches = await _context.Coaches
-    .Where(c => c.CoachType == 2)
-    .ToListAsync();
-
+                .Where(c => c.CoachType == 2)
+                .ToListAsync();
             var accounts = await _context.Accounts.ToListAsync();
 
-            // 教練清單 for dropdown
             var coachItems = coaches.Select(coach =>
             {
                 var account = accounts.FirstOrDefault(a => a.MemberId == coach.AccountId);
@@ -39,19 +35,26 @@ namespace fitPass.Controllers
             }).ToList();
             ViewBag.CoachList = coachItems;
 
-            // 新增：取得目前登入者ID
-            int? memberId = HttpContext.Session.GetInt32("MemberId");
+            // 課程查詢與條件篩選
+            var groupCoursesQuery = _context.CourseSchedules.AsQueryable();
 
-            // 取得所有「已報名」課程ID
-            List<int> reservedCourseIds = new List<int>();
-            if (memberId.HasValue)
+            if (coachId.HasValue && coachId.Value != 0)
             {
-                reservedCourseIds = _context.Reservations
-                    .Where(r => r.MemberId == memberId && r.Status == 1)
-                    .Select(r => r.CourseId)
-                    .Distinct()
-                    .ToList();
+                groupCoursesQuery = groupCoursesQuery.Where(c => c.CoachId == coachId.Value);
             }
+
+            if (locations != null && locations.Count > 0)
+            {
+                groupCoursesQuery = groupCoursesQuery.Where(c => locations.Contains(c.Location));
+            }
+
+            if (availableFilter == "available")
+            {
+                var today = DateOnly.FromDateTime(DateTime.Today);
+                groupCoursesQuery = groupCoursesQuery.Where(c => c.ClassStartDate > today);
+            }
+
+            var groupCourses = await groupCoursesQuery.ToListAsync();
 
             var viewModel = groupCourses.Select(course =>
             {
@@ -66,31 +69,9 @@ namespace fitPass.Controllers
                     CoachName = coachName,
                     PhotoUrl = photoUrl
                 };
-            });
-            // 篩選邏輯
-            if (coachId.HasValue && coachId.Value != 0)
-            {
-                viewModel = viewModel.Where(vm => vm.Course.CoachId == coachId.Value);
-            }
-            if (!string.IsNullOrEmpty(signUpFilter) && memberId.HasValue)
-            {
-                if (signUpFilter == "registered")
-                {
-                    viewModel = viewModel.Where(vm => reservedCourseIds.Contains(vm.Course.CourseId));
-                }
-                else if (signUpFilter == "notRegistered")
-                {
-                    viewModel = viewModel.Where(vm => !reservedCourseIds.Contains(vm.Course.CourseId));
-                }
-            }
-            // **這裡加上你的「可報名課程」篩選**
-            if (availableFilter == "available")
-            {
-                var today = DateOnly.FromDateTime(DateTime.Today);
-                viewModel = viewModel.Where(vm => vm.Course.ClassStartDate > today);
-            }
+            }).ToList();
 
-            return View(viewModel.ToList());
+            return View(viewModel);
         }
         public async Task<IActionResult> GroupCourseDetail(int id)
         {
