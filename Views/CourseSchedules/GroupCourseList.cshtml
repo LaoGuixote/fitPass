@@ -66,10 +66,10 @@
 <div class="location-filter">
     <form method="get" id="locationForm" style="display:inline;">
         <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="locations" value="拳擊"
-                   @(Context.Request.Query["locations"].Contains("拳擊") ? "checked" : "")
+            <input class="form-check-input" type="checkbox" name="locations" value="格鬥"
+                   @(Context.Request.Query["locations"].Contains("格鬥") ? "checked" : "")
                    onchange="document.getElementById('locationForm').submit();">
-            <label class="form-check-label">拳擊</label>
+            <label class="form-check-label">格鬥</label>
         </div>
         <div class="form-check form-check-inline">
             <input class="form-check-input" type="checkbox" name="locations" value="體適能"
