@@ -762,8 +762,10 @@ namespace fitPass.Controllers
 
             ViewData["LocationList"] = new List<SelectListItem>
     {
-        new SelectListItem { Text = "教室 A", Value = "教室A" },
-        new SelectListItem { Text = "教室 B", Value = "教室B" }
+        new SelectListItem { Text = "重訓", Value = "重訓" },
+        new SelectListItem { Text = "瑜珈", Value = "瑜珈" },
+        new SelectListItem { Text = "體適能", Value = "體適能" },
+        new SelectListItem { Text = "格鬥", Value = "格鬥" }
     };
 
             return View();
@@ -864,8 +866,10 @@ namespace fitPass.Controllers
 
             ViewData["LocationList"] = new List<SelectListItem>
     {
-        new SelectListItem { Text = "教室 A", Value = "教室A" },
-        new SelectListItem { Text = "教室 B", Value = "教室B" }
+        new SelectListItem { Text = "重訓", Value = "重訓" },
+        new SelectListItem { Text = "瑜珈", Value = "瑜珈" },
+        new SelectListItem { Text = "體適能", Value = "體適能" },
+        new SelectListItem { Text = "格鬥", Value = "格鬥" }
     };
 
             return View(course);
@@ -884,10 +888,12 @@ namespace fitPass.Controllers
                 "CoachId", "Account.Name", course.CoachId);
 
             ViewData["LocationList"] = new List<SelectListItem>
-            {
-                new SelectListItem { Text = "教室 A", Value = "教室A" },
-                new SelectListItem { Text = "教室 B", Value = "教室B" }
-            };
+    {
+        new SelectListItem { Text = "重訓", Value = "重訓" },
+        new SelectListItem { Text = "瑜珈", Value = "瑜珈" },
+        new SelectListItem { Text = "體適能", Value = "體適能" },
+        new SelectListItem { Text = "格鬥", Value = "格鬥" }
+    };
 
             return View(course);
         }
@@ -931,10 +937,12 @@ namespace fitPass.Controllers
                 "CoachId", "Account.Name", course.CoachId);
 
             ViewData["LocationList"] = new List<SelectListItem>
-            {
-                new SelectListItem { Text = "教室 A", Value = "教室A" },
-                new SelectListItem { Text = "教室 B", Value = "教室B" }
-            };
+    {
+        new SelectListItem { Text = "重訓", Value = "重訓" },
+        new SelectListItem { Text = "瑜珈", Value = "瑜珈" },
+        new SelectListItem { Text = "體適能", Value = "體適能" },
+        new SelectListItem { Text = "格鬥", Value = "格鬥" }
+    };
 
             return View(course);
         }
