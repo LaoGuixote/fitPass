@@ -1,41 +1,58 @@
 ﻿@using fitPass.Models
 @model Account
 @{
-    ViewData["Title"] = "個人檔案";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+	ViewData["Title"] = "個人檔案";
+	Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="text-center mt-3">
-    <div class="text-title-md mb-2">基本資料</div>
-    <form method="post" class="mt-3">
+	<div class="text-title-md mb-2">基本資料</div>
+	<form method="post" class="mt-3">
 
-        <div class="fitpass-card text-start">
-            <label class="text-title-md">姓名</label>
-            <input name="Name" class="form-control" value="@Model.Name" required />
+		<div class="fitpass-card text-start">
+			<label class="text-title-md">姓名</label>
+			<input name="Name" class="form-control" value="@Model.Name" required />
 
-            <label class="text-title-md mt-3">電話</label>
-            <input name="Phone" class="form-control" value="@Model.Phone" required />
+			<label class="text-title-md mt-3">信箱</label>
+			<input name="Email" class="form-control" value="@Model.Email" required />
+		</div>
 
-            <label class="text-title-md mt-3">信箱</label>
-            <input name="Email" class="form-control" value="@Model.Email" required />
-        </div>
+		<div class="text-title-md mt-4">更多資訊</div>
+		<div class="fitpass-card text-start">
+			<label class="text-title-md">性別</label>
+			<select name="Gender" class="form-select">
+				<option value="1" selected="@(Model.Gender == 1)">男</option>
+				<option value="2" selected="@(Model.Gender == 2)">女</option>
+				<option value="3" selected="@(Model.Gender == 3)">其他</option>
+			</select>
 
-        <div class="text-title-md mt-4">更多資訊</div>
-        <div class="fitpass-card text-start">
-            <label class="text-title-md">性別</label>
-            <select name="Gender" class="form-select">
-                <option value="1" selected="@(Model.Gender == 1)">男</option>
-                <option value="2" selected="@(Model.Gender == 2)">女</option>
-                <option value="3" selected="@(Model.Gender == 3)">其他</option>
-            </select>
+			<label class="text-title-md mt-3">生日</label>
+			<input name="Birthday" class="form-control" type="date" value="@Model.Birthday?.ToString("yyyy-MM-dd")" />
 
-            <label class="text-title-md mt-3">生日</label>
-            <input name="Birthday" class="form-control" type="date" value="@Model.Birthday?.ToString("yyyy-MM-dd")" />
+			<label class="text-title-md mt-3">興趣</label>
+			<br />
+			@{
+				// 假設 Model.Phone 是一個 string 儲存已選取的興趣，例如 "瑜珈,健身"
+				var selectedInterests = Model.Phone;
+				selectedInterests = selectedInterests == null ? "" : selectedInterests;
+				// 固定興趣列表
+				var allInterests = new List<string> { "重訓", "體適能", "拳擊", "瑜珈" };
 
-            <label class="text-title-md mt-3">加入日期</label>
-            <input class="form-control" value="@Model.JoinDate?.ToString("yyyy-MM-dd")" disabled />
-        </div>
+				foreach (var interest in allInterests)
+				{
+					// 判斷是否包含該興趣，例如 "瑜珈,健身".Contains("瑜珈") 為 true
+					var isChecked = selectedInterests.Contains(interest) ? "checked" : "";
+					<div class="form-check form-check-inline me-4 mb-2">
+						<input class="form-check-input" type="checkbox" name="Phone" id="@($"interest_{interest}")" value="@interest" @isChecked>
+						<label class="form-check-label fs-6" for="@($"interest_{interest}")">@interest</label>
+					</div>
+				}
+			}
+			<br />
+			<label class="text-title-md mt-3">加入日期</label>
+			<input class="form-control" value="@Model.JoinDate?.ToString("yyyy-MM-dd")" disabled />
+		</div>
 
-        <button class="btn btn-green w-100 mt-4">儲存資料</button>
-    </form>
+		<button class="btn btn-green w-100 mt-4">儲存資料</button>
+	</form>
 </div>

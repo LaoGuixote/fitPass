@@ -23,7 +23,7 @@
             <div class="mb-2 text-muted">@ViewBag.DateRange</div>
             <div class="mb-2"><span class="fw-bold">課程時間：</span>@ViewBag.TimeString</div>
             <div class="mb-2"><span class="fw-bold">課程教練：</span>@ViewBag.CoachName</div>
-            <div class="mb-2"><span class="fw-bold">地點：</span>@ViewBag.Location</div>
+            @* <div class="mb-2"><span class="fw-bold">地點：</span>@ViewBag.Location</div> *@
             <div class="mb-2">
                 <span class="fw-bold">報名人數：</span>
                 <span style="color:@((ViewBag.CurrentCount >= ViewBag.MaxCount) ? "#e23e36" : "#1abc60")">

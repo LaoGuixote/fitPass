@@ -3,6 +3,7 @@ using fitPass.ViewModels;
 using fitPass.ViewModels.CoursrOverview;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Recommendations;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -150,6 +151,8 @@ public class MemberController : Controller
         ViewBag.IsProfileIncomplete = isProfileIncomplete;
         ViewBag.MemberName = member.Name;
 
+        ViewBag.recommend = _context.CourseSchedules.Where(x => x.ClassStartDate > DateOnly.FromDateTime(DateTime.Now)).ToList();
+
         return View(viewModel);
     }
 
@@ -163,17 +166,25 @@ public class MemberController : Controller
     }
 
     [HttpPost]
-    public IActionResult Edit(Account updated)
+    public IActionResult Edit(Account updated, [FromForm(Name = "Phone")] List<string> selectedInterestsList)
     {
         var memberId = HttpContext.Session.GetInt32("MemberId");
         var member = _context.Accounts.FirstOrDefault(a => a.MemberId == memberId);
         if (member == null) return NotFound();
 
         member.Name = updated.Name;
-        member.Phone = updated.Phone;
         member.Email = updated.Email;
         member.Gender = updated.Gender;
         member.Birthday = updated.Birthday;
+
+        if (selectedInterestsList != null && selectedInterestsList.Any())
+        {
+            member.Phone = string.Join(",", selectedInterestsList);
+        }
+        else
+        {
+            member.Phone = ""; // 如果沒有選取任何興趣，將 Phone 欄位設為空字串
+        }
 
         _context.SaveChanges();
         TempData["Msg"] = "會員資料已更新";
