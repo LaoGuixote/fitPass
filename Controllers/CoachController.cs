@@ -190,7 +190,7 @@ namespace fitPass.Controllers
                 .Where(ct => ct.CoachId == coach.CoachId)
                 .GroupBy(ct => ct.Date)
                 .Select(g => new {
-                    title = $"已排:{g.Count()} ",
+                    title = $"已排 {g.Count()} 段",
                     start = g.Key.ToString("yyyy-MM-dd"), // FullCalendar 要用這個欄位當日期
                     color = "#0d6efd"
                 })

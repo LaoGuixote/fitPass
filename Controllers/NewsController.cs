@@ -18,9 +18,7 @@ public class NewsController : Controller
             .Where(n => n.IsVisible == true)
             .ToList() // ⭐ 先取回資料
             .OrderByDescending(n =>
-             n.Showtime.HasValue
-            ? n.Showtime.Value
-            : n.PublishTime
+             n.PublishTime
     );
 
         var paged = visibleNews
