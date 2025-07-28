@@ -23,8 +23,10 @@
 		<input type="text" id="detailKeyword" class="form-control" placeholder="說明關鍵字" />
 	</div>
 
-	<div class="col-12 col-md-3 mb-3 d-grid d-md-block">
-		<button type="button" id="filterBtn" class="btn btn-success w-100">查詢</button>
+	<div class="col-12 col-md-3 mb-3">
+		<div class="d-grid gap-2 d-md-flex">
+			<button type="button" id="filterBtn" class="btn btn-success flex-fill">查詢</button> <button type="button" id="clear" class="btn btn-secondary flex-fill">清除</button>
+		</div>
 	</div>
 </div>
 <br />
@@ -97,6 +99,12 @@
 	filterBtn.addEventListener('click', () => {
 		const filtered = filterData();
 		renderTable(filtered);
+	});
+
+	document.getElementById('clear').addEventListener("click", () =>{
+		document.querySelectorAll("input").forEach(x => {
+			x.value =""});
+		renderTable(originalData);
 	});
 
 	// 頁面載入時顯示全部
