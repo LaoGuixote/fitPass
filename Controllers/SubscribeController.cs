@@ -119,7 +119,7 @@ namespace fitPass.Controllers
             if (memberId == null)
                 return RedirectToAction("Login", "Account");
 
-            var record = _context.SubscriptionLogs.Where(a => a.MemberId == memberId).OrderByDescending(a => a.SubscriptionId).ToList();
+            var record = _context.SubscriptionLogs.Where(a => a.MemberId == memberId).OrderByDescending(a => a.SubscribedTime).ToList();
             return View(record);
         }
 
