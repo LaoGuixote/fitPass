@@ -49,7 +49,7 @@
 
     <div class="mb-3">
         <label asp-for="Content" class="form-label">內容</label>
-        <textarea asp-for="Content" class="form-control" rows="5"></textarea>
+        <textarea asp-for="Content" class="form-control" rows="15" id="editor"></textarea>
         <span asp-validation-for="Content" class="text-danger"></span>
     </div>
 
@@ -82,5 +82,22 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+        <script>
+            $(document).ready(function () {
+                $('#editor').summernote({
+                    height: 400,
+                    placeholder: '請輸入公告內容...',
+                    toolbar: [
+                        ['style', ['style']],
+                        ['font', ['bold', 'italic', 'underline', 'clear']],
+                        ['fontsize', ['fontsize']],
+                        ['color', ['color']],
+                        ['para', ['ul', 'ol', 'paragraph']],
+                        ['insert', ['link', 'picture', 'video']],
+                        ['view', ['fullscreen', 'codeview']]
+                    ]
+                });
+            });
+        </script>
 }
 </div>
