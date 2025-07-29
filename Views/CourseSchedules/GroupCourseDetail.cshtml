@@ -44,9 +44,18 @@
 
 @if (isExpired)
 {
-    <div class="text-danger fw-bold text-center mb-2" style="font-size: 1.1rem;">
-        ⚠️ 已過報名日期，僅可取消報名
-    </div>
+    if (hasReserved)
+    {
+        <div class="text-danger fw-bold text-center mb-2" style="font-size: 1.1rem;">
+            ⚠️ 已過報名日期，只能取消報名
+        </div>
+    }
+    else
+    {
+        <div class="text-danger fw-bold text-center mb-2" style="font-size: 1.1rem;">
+            ⚠️ 已過報名日期，無法報名
+        </div>
+    }
 }
 
 <div class="d-grid gap-2 mb-2">
