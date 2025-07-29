@@ -20,8 +20,8 @@
             </div>
             <!-- 課程資訊 -->
             <h4 class="card-title mb-1">@Model.Title</h4>
-            <div class="mb-2 text-muted">@ViewBag.DateRange</div>
-            <div class="mb-2"><span class="fw-bold">課程時間：</span>@ViewBag.TimeString</div>
+            <div class="mb-2"><span class="fw-bold">開課時間：</span>@ViewBag.DateRange</div>
+            <div class="mb-2"><span class="fw-bold">上課時段：</span>@ViewBag.TimeString</div>
             <div class="mb-2"><span class="fw-bold">課程教練：</span>@ViewBag.CoachName</div>
             @* <div class="mb-2"><span class="fw-bold">地點：</span>@ViewBag.Location</div> *@
             <div class="mb-2">
@@ -31,6 +31,8 @@
                 </span>
             </div>
             <div class="mb-3"><span class="fw-bold">課程介紹：</span>@Model.Description</div>
+            <div class="mb-3"><span class="fw-bold">課程費用：</span>@Model.Price</div>
+
 
 
             <!-- 按鈕區 -->
