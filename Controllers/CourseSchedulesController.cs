@@ -506,84 +506,84 @@ namespace fitPass.Controllers
         }
 
         [HttpPost]
-public IActionResult AjaxCancelSignUp(int courseId)
-{
-    var memberId = HttpContext.Session.GetInt32("MemberId");
-    if (memberId == null)
-        return Json(new { success = false, message = "未登入，請先登入會員" });
-
-    var reservation = _context.Reservations.FirstOrDefault(r => r.MemberId == memberId && r.CourseId == courseId && r.Status == 1);
-    if (reservation == null)
-        return Json(new { success = false, message = "你沒有報名過該課程" });
-
-    if (reservation.Status == 2)
-        return Json(new { success = false, message = "你已經取消過，請重新報名後再取消" });
-
-    // 找課程
-    var course = _context.CourseSchedules.FirstOrDefault(c => c.CourseId == courseId);
-    if (course == null)
-        return Json(new { success = false, message = "查無此課程" });
-
-    int price = course.Price ?? 0;
-
-    // 找會員
-    var member = _context.Accounts.FirstOrDefault(a => a.MemberId == memberId);
-    if (member == null)
-        return Json(new { success = false, message = "查無會員" });
-
-    // 取出起訖日期
-    var startDate = course.ClassStartDate;
-    var endDate = course.ClassEndDate;
-
-    if (!startDate.HasValue || !endDate.HasValue)
-        return Json(new { success = false, message = "課程時間設定錯誤，無法退費" });
-
-    // 計算總堂數（每週一堂課）
-    int totalWeeks = (int)((endDate.Value.ToDateTime(TimeOnly.MinValue) - startDate.Value.ToDateTime(TimeOnly.MinValue)).TotalDays / 7) + 1;
-
-    // 每堂課金額
-    decimal pricePerClass = (totalWeeks > 0) ? ((decimal)price / totalWeeks) : price;
-
-    // 計算剩餘堂數（含今天未上課的堂數才可退費）
-    int remainWeeks = 0;
-    var today = DateOnly.FromDateTime(DateTime.Today);
-
-    for (var d = startDate.Value; d <= endDate.Value; d = d.AddDays(7))
-    {
-        if (d >= today)
-            remainWeeks++;
-    }
-
-    // 算退還點數
-    int refund = (int)Math.Round(pricePerClass * remainWeeks);
-
-    // 執行取消與退點
-    reservation.Status = 2;
-    int refundToUser = refund > 0 ? refund : 0;
-
-    if (refundToUser > 0)
-    {
-        _context.PointLogs.Add(new PointLog
+        public IActionResult AjaxCancelSignUp(int courseId)
         {
-            MemberId = member.MemberId,
-            AlterationTime = DateTime.Now,
-            OriginalPoint = member.Point,
-            FinallPoint = member.Point + refundToUser,
-            Detail = $"取消 {course.Title} 課程 退回 {refundToUser} 點"
-        });
-        member.Point += refundToUser;
-    }
+            var memberId = HttpContext.Session.GetInt32("MemberId");
+            if (memberId == null)
+                return Json(new { success = false, message = "未登入，請先登入會員" });
 
-    _context.SaveChanges();
+            var reservation = _context.Reservations.FirstOrDefault(r => r.MemberId == memberId && r.CourseId == courseId && r.Status == 1);
+            if (reservation == null)
+                return Json(new { success = false, message = "你沒有報名過該課程" });
 
-    return Json(new
-    {
-        success = true,
-        message = refundToUser > 0
-            ? $"你已成功取消報名，退回 {refundToUser} 點"
-            : "你已成功取消報名（已上課不退費）"
-    });
-}
+            if (reservation.Status == 2)
+                return Json(new { success = false, message = "你已經取消過，請重新報名後再取消" });
+
+            // 找課程
+            var course = _context.CourseSchedules.FirstOrDefault(c => c.CourseId == courseId);
+            if (course == null)
+                return Json(new { success = false, message = "查無此課程" });
+
+            int price = course.Price ?? 0;
+
+            // 找會員
+            var member = _context.Accounts.FirstOrDefault(a => a.MemberId == memberId);
+            if (member == null)
+                return Json(new { success = false, message = "查無會員" });
+
+            // 取出起訖日期
+            var startDate = course.ClassStartDate;
+            var endDate = course.ClassEndDate;
+
+            if (!startDate.HasValue || !endDate.HasValue)
+                return Json(new { success = false, message = "課程時間設定錯誤，無法退費" });
+
+            // 計算總堂數（每週一堂課）
+            int totalWeeks = (int)((endDate.Value.ToDateTime(TimeOnly.MinValue) - startDate.Value.ToDateTime(TimeOnly.MinValue)).TotalDays / 7) + 1;
+
+            // 每堂課金額
+            decimal pricePerClass = (totalWeeks > 0) ? ((decimal)price / totalWeeks) : price;
+
+            // 計算剩餘堂數（含今天未上課的堂數才可退費）
+            int remainWeeks = 0;
+            var today = DateOnly.FromDateTime(DateTime.Today);
+
+            for (var d = startDate.Value; d <= endDate.Value; d = d.AddDays(7))
+            {
+                if (d >= today)
+                    remainWeeks++;
+            }
+
+            // 算退還點數
+            int refund = (int)Math.Round(pricePerClass * remainWeeks);
+
+            // 執行取消與退點
+            reservation.Status = 2;
+            int refundToUser = refund > 0 ? refund : 0;
+
+            if (refundToUser > 0)
+            {
+                _context.PointLogs.Add(new PointLog
+                {
+                    MemberId = member.MemberId,
+                    AlterationTime = DateTime.Now,
+                    OriginalPoint = member.Point,
+                    FinallPoint = member.Point + refundToUser,
+                    Detail = $"取消 {course.Title} 課程 退回 {refundToUser} 點"
+                });
+                member.Point += refundToUser;
+            }
+
+            _context.SaveChanges();
+
+            return Json(new
+            {
+                success = true,
+                message = refundToUser > 0
+                    ? $"你已成功取消報名，退回 {refundToUser} 點"
+                    : "你已成功取消報名（已上課不退費）"
+            });
+        }
 
     }
 

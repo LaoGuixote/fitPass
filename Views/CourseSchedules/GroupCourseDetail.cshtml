@@ -35,60 +35,48 @@
 
 
 
-            <!-- 按鈕區 -->
-            @{
-                var isFull = (ViewBag.CurrentCount >= ViewBag.MaxCount);
-                bool hasReserved = ViewBag.HasReserved != null && (bool)ViewBag.HasReserved;
-                var classTimeStart = (DateOnly?)ViewBag.ClassTimeStart;
-                var isExpired = classTimeStart.HasValue && classTimeStart.Value <= DateOnly.FromDateTime(DateTime.Today);
+@{
+    var isFull = (ViewBag.CurrentCount >= ViewBag.MaxCount);
+    bool hasReserved = ViewBag.HasReserved != null && (bool)ViewBag.HasReserved;
+    var classTimeStart = (DateOnly?)ViewBag.ClassTimeStart;
+    var isExpired = classTimeStart.HasValue && classTimeStart.Value <= DateOnly.FromDateTime(DateTime.Today);
+}
 
-            }
-
-            @if (isExpired)
+@if (isExpired)
 {
     <div class="text-danger fw-bold text-center mb-2" style="font-size: 1.1rem;">
-        ⚠️ 已過報名日期，無法報名或取消
+        ⚠️ 已過報名日期，僅可取消報名
     </div>
 }
-            <div class="d-grid gap-2 mb-2">
-@if (isFull)
-{
-    <button class="btn btn-secondary" disabled>名額已滿</button>
-    <div class="text-danger mt-2">課程人數已達上限，請選擇其他場次</div>
-}
-else if (hasReserved)
-{
-    <button class="btn btn-secondary" disabled>已報名</button>
-}
-else if (isExpired)
-{
-    <button class="btn btn-secondary" onclick="showExpired('已開始上課，無法報名')" disabled style="cursor:not-allowed;">報名團課</button>
-}
-else
-{
-    <button class="btn btn-success" onclick="showConfirm()">報名團課</button>
-}
 
-            </div>
-            <div class="d-grid gap-2">
-@if (hasReserved)
-{
-    if (isExpired)
+<div class="d-grid gap-2 mb-2">
+    @if (isFull)
     {
-        <button class="btn btn-secondary" onclick="showExpired('已開始上課，無法取消報名')" disabled style="cursor:not-allowed;">取消報名</button>
+        <button class="btn btn-secondary" disabled>名額已滿</button>
+        <div class="text-danger mt-2">課程人數已達上限，請選擇其他場次</div>
+    }
+    else if (hasReserved)
+    {
+        <button class="btn btn-secondary" disabled>已報名</button>
+    }
+    else if (isExpired)
+    {
+        <button class="btn btn-secondary" onclick="showExpired('已開始上課，無法報名')" disabled style="cursor:not-allowed;">報名團課</button>
     }
     else
     {
+        <button class="btn btn-success" onclick="showConfirm()">報名團課</button>
+    }
+</div>
+<div class="d-grid gap-2">
+    @if (hasReserved)
+    {
         <button class="btn btn-danger" onclick="showCancelConfirm()">取消報名</button>
     }
-}
-else
-{
-    <button class="btn btn-secondary" disabled>取消報名</button>
-}
-            </div>
-        </div>
-    </div>
+    else
+    {
+        <button class="btn btn-secondary" disabled>取消報名</button>
+    }
 </div>
 
 <!-- 彈跳視窗 (注意：放在container/card外面) -->
