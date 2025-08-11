@@ -1,25 +1,25 @@
-# 專題簡介
+# 專案簡介
 這個專案是資展(前資策會)C#培訓班的小組期末專題作品
 
-# 成員
+# 專案成員
 小組成員及分工：  
 
-　DianYi916：  
+　<a href="https://github.com/DianYi916">DianYi916：</a>  
 　　└後台管理員系統(前端、後端)  
   
-　m851114：  
+　<a href="https://github.com/m851114">m851114：</a>  
 　　└wireframe繪製、登入註冊首頁、QRcode進出場、最新消息、會員資訊、_Layout設計  
   
-　epcake：  
+　<a href="https://github.com/epcake">epcake：</a>  
 　　└點數儲值及記錄、會籍訂閱及記錄、Inbody圖表、註冊驗證信、聯繫客服  
   
-　**LaoGuixote**：  
+　<a href="https://github.com/LaoGuixote">**LaoGuixote**：</a>  
 　　└教練總覽、私教預約、會員課程管理、教練排班及預約管理、忘記密碼  
   
-　Toki17480：  
+　<a href="https://github.com/Toki17480">Toki17480：</a>  
 　　└團體課程總覽、報名課程系統、課表預覽  
 
-# 專題描述與功能
+# 專案描述與功能
 fitPass 是一套健身房專用的會員服務整合系統，目標為單一健身房提供：  
 1. 進出場管理  
 　└ QRcode
