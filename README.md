@@ -36,5 +36,5 @@ fitPass 是一套健身房專用的會員服務整合系統，目標為單一健
 　└ 管理者-電腦  
 
 # 使用者架構
-<img src="" alt="架構圖1">
-<img src="" alt="架構圖2">
+<img src="./wwwroot/img/Architecture diagram1.png" alt="架構圖1">
+<img src="./wwwroot/img/Architecture diagram2.png" alt="架構圖2">
