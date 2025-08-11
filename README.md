@@ -1,5 +1,6 @@
 # 專案簡介
-這個專案是資展 (前資策會) C#專班的小組期末專題作品
+這個專案是資展 (前資策會) C#專班的小組期末專題作品。主要使用 ASP.NET Core MVC 作為框架開發，後端採用 Entity Framework Core 搭配 SQL Server 管理資料。
+前端結合 Bootstrap、jQuery 與 FullCalendar.js 提供良好的使用者操作體驗。
 
 # 專案成員
 小組成員及分工：  
