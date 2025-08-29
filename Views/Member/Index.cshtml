@@ -210,149 +210,200 @@ else
 
 <!-- 🧷 固定底部入場按鈕 -->
 <div class="qrcode-fixed-bar d-grid">
-	@if (Model.HasValidSubscription)
-	{
-		<button class="btn btn-green py-3"
-				data-bs-toggle="modal" data-bs-target="#qrcodeModal"
-				onclick="openQRCodeModal()">
-			入場 QRCode
-		</button>
-	}
-	else
-	{
-		<button class="btn btn-secondary py-3" onclick="alert('請先訂閱會籍才能入場喔！')">
-			入場 QRCode
-		</button>
-	}
+    @if (Model.HasValidSubscription)
+    {
+        <button class="btn btn-green py-3"
+                data-bs-toggle="modal" data-bs-target="#qrcodeModal"
+                onclick="openQRCodeModal()">
+            入場 QRCode
+        </button>
+    }
+    else
+    {
+        <button class="btn btn-secondary py-3" onclick="showSubscriptionModal()">
+            入場 QRCode
+        </button>
+    }
 </div>
+
+<!-- 置中彈跳視窗 -->
+<div id="subscriptionModal" class="custom-modal-bg" style="display:none;">
+    <div class="custom-modal-window">
+        <div class="custom-modal-content">
+            <div class="mb-3">請先訂閱會籍才能入場喔！</div>
+            <button onclick="hideSubscriptionModal()" class="btn btn-primary px-4">了解</button>
+        </div>
+    </div>
+</div>
+
+
 
 
 <!-- Modal -->
 <div class="modal fade" id="qrcodeModal" tabindex="-1" aria-labelledby="qrcodeLabel" aria-hidden="true">
-	<div class="modal-dialog modal-dialog-centered">
-		<div class="modal-content text-center">
-			<div class="modal-header border-0 flex-column align-items-start">
-				<h5 class="modal-title w-100 text-title-md">@Model.Member.Name 的入場碼</h5>
-				<p id="modalEntryStatus" class="text-muted small mt-2 mb-0 text-center w-100">
-					目前狀態：<span class="text-secondary">等待掃描中...</span>
-				</p>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content text-center">
+            <div class="modal-header border-0 flex-column align-items-start">
+                <h5 class="modal-title w-100 text-title-md">@Model.Member.Name 的入場碼</h5>
+                <p id="modalEntryStatus" class="text-muted small mt-2 mb-0 text-center w-100">
+                    目前狀態：<span class="text-secondary">等待掃描中...</span>
+                </p>
 
 
 
-				<button type="button" class="btn-close position-absolute end-0 top-0 me-2 mt-2" data-bs-dismiss="modal"></button>
-			</div>
-			<div class="modal-body">
-				<div class="d-flex justify-content-center align-items-center flex-column">
-					<div id="qrcodeWrapper" class="position-relative" style="width: 180px; height: 180px;">
-						<div id="qrcode"></div>
-					</div>
+                <button type="button" class="btn-close position-absolute end-0 top-0 me-2 mt-2" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex justify-content-center align-items-center flex-column">
+                    <div id="qrcodeWrapper" class="position-relative" style="width: 180px; height: 180px;">
+                        <div id="qrcode"></div>
+                    </div>
 
-					<p class="text-info-sm mt-3">剩餘時間 <span id="countdown">30</span> 秒</p>
-					<button class="btn btn-outline-success mt-2" onclick="refreshQRCode()">重新整理</button>
-				</div>
+                    <p class="text-info-sm mt-3">剩餘時間 <span id="countdown">30</span> 秒</p>
+                    <button class="btn btn-outline-success mt-2" onclick="refreshQRCode()">重新整理</button>
+                </div>
 
-			</div>
-		</div>
-	</div>
+            </div>
+        </div>
+    </div>
 </div>
+<style>
+    .custom-modal-bg {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+    }
+
+    .custom-modal-window {
+        background: #fff;
+        padding: 30px 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        text-align: center;
+        max-width: 90%;
+    }
+
+    .custom-modal-content {
+        font-size: 18px;
+        color: #333;
+    }
+</style>
+
 
 <!-- Script -->
-<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
 <script>
-	const memberId = '@Context.Session.GetInt32("MemberId")';
-	let qrcode;
-	let countdown = 30;
-	let countdownInterval;
+    function showSubscriptionModal() {
+        document.getElementById('subscriptionModal').style.display = 'flex';
+    }
 
-	function resetCountdown() {
-		countdown = 30;
-		document.getElementById("countdown").innerText = countdown;
-		clearInterval(countdownInterval);
-		countdownInterval = setInterval(() => {
-			countdown--;
-			document.getElementById("countdown").innerText = countdown;
-			if (countdown <= 0) clearInterval(countdownInterval);
-		}, 1000);
-	}
-
-	function generateQRCodeOnly() {
-		const timestamp = Date.now();
-		const qrText = btoa(`${memberId}|${timestamp}`);
-
-		if (!qrcode) {
-			qrcode = new QRCode(document.getElementById("qrcode"), {
-				width: 180,
-				height: 180
-			});
-		} else {
-			qrcode.clear();
-		}
-
-		qrcode.makeCode(qrText);
-		resetCountdown();
-
-		// 初始狀態文字：Modal + 首頁同步顯示「等待掃描中...」
-		const modalStatus = document.getElementById("modalEntryStatus");
-		const homeStatus = document.getElementById("entryStatusDisplay");
-
-		if (modalStatus) {
-			modalStatus.innerHTML = '目前狀態：<span class="text-secondary">等待掃描中...</span>';
-		}
-		if (homeStatus) {
-			homeStatus.innerHTML = '目前狀態：<span class="text-secondary">等待掃描中...</span>';
-		}
-	}
-
-	function checkStatusAfterDelay() {
-		fetch('/Member/CheckInOut', {
-			method: 'POST',
-			headers: {
-				'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
-			}
-		})
-		.then(res => res.json())
-		.then(data => {
-			const modalStatus = document.getElementById("modalEntryStatus");
-			const homeStatus = document.getElementById("entryStatusDisplay");
-			const peopleNowDisplay = document.getElementById("peopleNowDisplay");
-
-			if (data.success) {
-				const newStatus =
-					data.currentStatus === "已入場"
-						? '<span class="text-success">入場中</span>'
-						: '<span class="text-danger">未入場</span>';
-
-				if (modalStatus) {
-					modalStatus.innerHTML = `目前狀態：${newStatus}`;
-				}
-
-				if (homeStatus) {
-					homeStatus.innerHTML = `目前狀態：${newStatus}`;
-				}
-
-				if (peopleNowDisplay) {
-					peopleNowDisplay.innerText = `目前場館人流：${data.peopleNow} / 60`;
-				}
-			} else {
-				if (modalStatus) {
-					modalStatus.innerHTML = '<span class="text-danger">打卡失敗</span>';
-				}
-				if (homeStatus) {
-					homeStatus.innerHTML = '<span class="text-danger">打卡失敗</span>';
-				}
-			}
-		});
-	}
-
-	function openQRCodeModal() {
-		generateQRCodeOnly();
-		setTimeout(() => {
-			checkStatusAfterDelay();
-		}, 2000);
-	}
-
-	function refreshQRCode() {
-		openQRCodeModal();
-	}
+    function hideSubscriptionModal() {
+        document.getElementById('subscriptionModal').style.display = 'none';
+    }
 </script>
 
+
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+<script>
+    const memberId = '@Context.Session.GetInt32("MemberId")';
+    let qrcode;
+    let countdown = 30;
+    let countdownInterval;
+
+    function resetCountdown() {
+        countdown = 30;
+        document.getElementById("countdown").innerText = countdown;
+        clearInterval(countdownInterval);
+        countdownInterval = setInterval(() => {
+            countdown--;
+            document.getElementById("countdown").innerText = countdown;
+            if (countdown <= 0) clearInterval(countdownInterval);
+        }, 1000);
+    }
+
+    function generateQRCodeOnly() {
+        const timestamp = Date.now();
+        const qrText = btoa(`${memberId}|${timestamp}`);
+
+        if (!qrcode) {
+            qrcode = new QRCode(document.getElementById("qrcode"), {
+                width: 180,
+                height: 180
+            });
+        } else {
+            qrcode.clear();
+        }
+
+        qrcode.makeCode(qrText);
+        resetCountdown();
+
+        // 初始狀態文字：Modal + 首頁同步顯示「等待掃描中...」
+        const modalStatus = document.getElementById("modalEntryStatus");
+        const homeStatus = document.getElementById("entryStatusDisplay");
+
+        if (modalStatus) {
+            modalStatus.innerHTML = '目前狀態：<span class="text-secondary">等待掃描中...</span>';
+        }
+        if (homeStatus) {
+            homeStatus.innerHTML = '目前狀態：<span class="text-secondary">等待掃描中...</span>';
+        }
+    }
+
+    function checkStatusAfterDelay() {
+        fetch('/Member/CheckInOut', {
+            method: 'POST',
+            headers: {
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? ''
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            const modalStatus = document.getElementById("modalEntryStatus");
+            const homeStatus = document.getElementById("entryStatusDisplay");
+            const peopleNowDisplay = document.getElementById("peopleNowDisplay");
+
+            if (data.success) {
+                const newStatus =
+                    data.currentStatus === "已入場"
+                        ? '<span class="text-success">入場中</span>'
+                        : '<span class="text-danger">未入場</span>';
+
+                if (modalStatus) {
+                    modalStatus.innerHTML = `目前狀態：${newStatus}`;
+                }
+
+                if (homeStatus) {
+                    homeStatus.innerHTML = `目前狀態：${newStatus}`;
+                }
+
+                if (peopleNowDisplay) {
+                    peopleNowDisplay.innerText = `目前場館人流：${data.peopleNow} / 60`;
+                }
+            } else {
+                if (modalStatus) {
+                    modalStatus.innerHTML = '<span class="text-danger">打卡失敗</span>';
+                }
+                if (homeStatus) {
+                    homeStatus.innerHTML = '<span class="text-danger">打卡失敗</span>';
+                }
+            }
+        });
+    }
+
+    function openQRCodeModal() {
+        generateQRCodeOnly();
+        setTimeout(() => {
+            checkStatusAfterDelay();
+        }, 2000);
+    }
+
+    function refreshQRCode() {
+        openQRCodeModal();
+    }
+</script>

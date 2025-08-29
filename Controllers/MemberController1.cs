@@ -245,7 +245,7 @@ public class MemberController : Controller
         .Include(r => r.Course)
         .ThenInclude(c => c.Coach)
         .ThenInclude(a => a.Account)
-        .Where(r => r.MemberId == memberId && r.Course != null);
+        .Where(r => r.MemberId == memberId && r.Course != null && r.Status == 1);
 
         if (!string.IsNullOrEmpty(keyword))
         {
